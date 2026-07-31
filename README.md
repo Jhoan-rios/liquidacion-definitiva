@@ -1,8 +1,8 @@
-# Proyecto de Liquidación Definitiva en Excel
+# Proyecto de Liquidación Definitiva
 
 ## 📖 Descripción
 
-Este proyecto consiste en el desarrollo de una hoja de cálculo en Microsoft Excel que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato. El archivo automatiza el cálculo de las prestaciones sociales, indemnizaciones (cuando corresponda) y demás valores relacionados con la terminación del vínculo laboral.
+Este proyecto consiste en el desarrollo de una caluladora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato. El archivo automatiza el cálculo de las prestaciones sociales, indemnizaciones (cuando corresponda) y demás valores relacionados con la terminación del vínculo laboral.
 
 El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación precisa a partir de la información suministrada del empleado.
 
