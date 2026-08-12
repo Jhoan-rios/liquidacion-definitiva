@@ -1,469 +1,91 @@
-import unittest
+"""
+Interfaz de consola para el cálculo de liquidación laboral.
+
+Solicita los datos al usuario, invoca la lógica de negocio
+(logica_liquidacion.py) y muestra el resultado o el error
+correspondiente.
+"""
+
 from datetime import datetime
 
-
-# ==========================
-# CONSTANTES
-# ==========================
-
-DIAS_ANO = 360
-DIAS_MES = 30
-PORCENTAJE_INTERESES = 0.12
-DIAS_INDEMNIZACION_BASE = 30
-DIAS_INDEMNIZACION_ADICIONALES = 20
-
-
-# ==========================
-# EXCEPCIONES
-# ==========================
-
-class SalarioInvalidoException(Exception):
-    pass
-
-
-class FechaInvalidaException(Exception):
-    pass
-
-
-class TipoRetiroInvalidoException(Exception):
-    pass
-
-
-# ==========================
-# VALIDACIONES
-# ==========================
-
-def validar_salario(salario):
-    if salario <= 0:
-        raise SalarioInvalidoException(
-            "El salario debe ser mayor que cero."
-        )
-
-
-# ==========================
-# FUNCIONES
-# ==========================
-
-def calcular_dias(fecha_ingreso, fecha_retiro):
-    if fecha_retiro is None or fecha_retiro < fecha_ingreso:
-        raise FechaInvalidaException(
-            "La fecha de retiro es inválida."
-        )
-
-    return (fecha_retiro - fecha_ingreso).days
-
-
-def calcular_salario_restante(salario, fecha_retiro):
-    validar_salario(salario)
-
-    dias_trabajados_mes = fecha_retiro.day
-
-    return (salario / DIAS_MES) * dias_trabajados_mes
-
-
-def calcular_prima(salario, dias):
-    validar_salario(salario)
-
-    return (salario * dias) / DIAS_ANO
-
-
-def calcular_cesantias(salario, dias):
-    validar_salario(salario)
-
-    return (salario * dias) / DIAS_ANO
-
-
-def calcular_intereses(cesantias, dias):
-    return (
-        cesantias
-        * PORCENTAJE_INTERESES
-        * dias
-    ) / DIAS_ANO
-
-
-def calcular_vacaciones(
-    salario,
-    dias,
-    vacaciones_disfrutadas
-):
-    validar_salario(salario)
-
-    vacaciones_generadas = (
-        salario * dias
-    ) / (DIAS_ANO * 2)
-
-    descuento = (
-        salario / DIAS_MES
-    ) * vacaciones_disfrutadas
-
-    vacaciones_pendientes = (
-        vacaciones_generadas - descuento
-    )
-
-    return max(vacaciones_pendientes, 0)
-
-
-def calcular_indemnizacion(salario, dias):
-    validar_salario(salario)
-
-    salario_dia = salario / DIAS_MES
-
-    dias_indemnizacion = DIAS_INDEMNIZACION_BASE
-
-    if dias > DIAS_ANO:
-
-        dias_restantes = dias - DIAS_ANO
-
-        anos = dias_restantes // DIAS_ANO
-
-        dias_indemnizacion += (
-            anos * DIAS_INDEMNIZACION_ADICIONALES
-        )
-
-        fraccion = dias_restantes % DIAS_ANO
-
-        dias_indemnizacion += (
-            fraccion
-            * DIAS_INDEMNIZACION_ADICIONALES
-        ) / DIAS_ANO
-
-    return salario_dia * dias_indemnizacion
-
-
-def calcular_liquidacion(
-    tipo_retiro,
-    salario,
-    fecha_ingreso,
-    fecha_retiro,
-    vacaciones_disfrutadas
-):
-    dias = calcular_dias(
-        fecha_ingreso,
-        fecha_retiro
-    )
-
-    salario_restante = calcular_salario_restante(
-        salario,
-        fecha_retiro
-    )
-
-    prima = calcular_prima(
-        salario,
-        dias
-    )
-
-    cesantias = calcular_cesantias(
-        salario,
-        dias
-    )
-
-    intereses = calcular_intereses(
-        cesantias,
-        dias
-    )
-
-    vacaciones = calcular_vacaciones(
-        salario,
-        dias,
-        vacaciones_disfrutadas
-    )
-
-    if tipo_retiro == "Renuncia":
-
-        indemnizacion = 0
-
-    elif tipo_retiro == "Despido con justa causa":
-
-        indemnizacion = 0
-
-    elif tipo_retiro == "Despido sin justa causa":
-
-        indemnizacion = calcular_indemnizacion(
-            salario,
-            dias
-        )
-
-    else:
-
-        raise TipoRetiroInvalidoException(
-            "Tipo de retiro inválido."
-        )
-
-    return (
-        salario_restante
-        + prima
-        + cesantias
-        + intereses
-        + vacaciones
-        + indemnizacion
-    )
-
-
-# ==========================
-# PRUEBAS UNITARIAS
-# ==========================
-
-class LiquidacionTest(unittest.TestCase):
-
-    def test_prima_para_180_dias(self):
-        salario = 2_000_000
-        dias = 180
-
-        resultado = calcular_prima(
-            salario,
-            dias
-        )
-
-        esperado = 1_000_000
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_cesantias_para_360_dias(self):
-        salario = 1_500_000
-        dias = 360
-
-        resultado = calcular_cesantias(
-            salario,
-            dias
-        )
-
-        esperado = 1_500_000
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_intereses_para_360_dias(self):
-        cesantias = 1_200_000
-        dias = 360
-
-        resultado = calcular_intereses(
-            cesantias,
-            dias
-        )
-
-        esperado = 144_000
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_salario_restante(self):
-        salario = 1_750_000
-
-        fecha_retiro = datetime(
-            2026,
-            5,
-            20
-        )
-
-        resultado = calcular_salario_restante(
-            salario,
-            fecha_retiro
-        )
-
-        esperado = (
-            1_750_000 / 30
-        ) * 20
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_vacaciones_con_5_dias_disfrutados(self):
-        salario = 1_800_000
-        dias = 360
-        vacaciones_disfrutadas = 5
-
-        resultado = calcular_vacaciones(
-            salario,
-            dias,
-            vacaciones_disfrutadas
-        )
-
-        esperado = 600_000
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_vacaciones_no_pueden_ser_negativas(self):
-        salario = 1_800_000
-        dias = 360
-        vacaciones_disfrutadas = 100
-
-        resultado = calcular_vacaciones(
-            salario,
-            dias,
-            vacaciones_disfrutadas
-        )
-
-        esperado = 0
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_indemnizacion_para_360_dias(self):
-        salario = 1_800_000
-        dias = 360
-
-        resultado = calcular_indemnizacion(
-            salario,
-            dias
-        )
-
-        esperado = 1_800_000
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_calcular_dias(self):
-        ingreso = datetime(
-            2025,
-            1,
-            1
-        )
-
-        retiro = datetime(
-            2025,
-            7,
-            1
-        )
-
-        resultado = calcular_dias(
-            ingreso,
-            retiro
-        )
-
-        esperado = 181
-
-        self.assertEqual(
-            esperado,
-            resultado
-        )
-
-
-    def test_liquidacion_por_renuncia(self):
-        salario = 2_000_000
-
-        ingreso = datetime(
-            2025,
-            1,
-            1
-        )
-
-        retiro = datetime(
-            2025,
-            12,
-            27
-        )
-
+from logica_liquidacion import (
+    calcular_liquidacion,
+    SalarioInvalidoException,
+    FechaInvalidaException,
+    TipoRetiroInvalidoException,
+)
+
+
+def pedir_fecha(mensaje):
+    while True:
+        texto = input(mensaje)
+        try:
+            return datetime.strptime(texto, "%Y-%m-%d")
+        except ValueError:
+            print("Formato inválido. Usa AAAA-MM-DD (ej: 2025-01-31).")
+
+
+def pedir_numero(mensaje):
+    while True:
+        texto = input(mensaje)
+        try:
+            return float(texto)
+        except ValueError:
+            print("Debes ingresar un número válido.")
+
+
+def pedir_entero(mensaje):
+    while True:
+        texto = input(mensaje)
+        try:
+            return int(texto)
+        except ValueError:
+            print("Debes ingresar un número entero válido.")
+
+
+def pedir_tipo_retiro():
+    opciones = [
+        "Renuncia",
+        "Despido con justa causa",
+        "Despido sin justa causa",
+    ]
+    print("Tipos de retiro disponibles:")
+    for i, opcion in enumerate(opciones, start=1):
+        print(f"  {i}. {opcion}")
+
+    while True:
+        texto = input("Selecciona el número del tipo de retiro: ")
+        if texto.isdigit() and 1 <= int(texto) <= len(opciones):
+            return opciones[int(texto) - 1]
+        print("Opción inválida, intenta de nuevo.")
+
+
+def main():
+    print("=== Calculadora de Liquidación Laboral ===\n")
+
+    tipo_retiro = pedir_tipo_retiro()
+    salario = pedir_numero("Salario mensual: ")
+    fecha_ingreso = pedir_fecha("Fecha de ingreso (AAAA-MM-DD): ")
+    fecha_retiro = pedir_fecha("Fecha de retiro (AAAA-MM-DD): ")
+    vacaciones_disfrutadas = pedir_entero("Días de vacaciones ya disfrutados: ")
+
+    try:
         resultado = calcular_liquidacion(
-            "Renuncia",
+            tipo_retiro,
             salario,
-            ingreso,
-            retiro,
-            0
+            fecha_ingreso,
+            fecha_retiro,
+            vacaciones_disfrutadas,
         )
+        print(f"\nEl valor total de la liquidación es: ${resultado:,.2f}")
 
-        self.assertGreater(
-            resultado,
-            0
-        )
+    except SalarioInvalidoException as e:
+        print(f"\nError de salario: {e}")
+    except FechaInvalidaException as e:
+        print(f"\nError de fecha: {e}")
+    except TipoRetiroInvalidoException as e:
+        print(f"\nError de tipo de retiro: {e}")
 
-
-    def test_salario_negativo_genera_error(self):
-
-        with self.assertRaises(
-            SalarioInvalidoException
-        ):
-            calcular_prima(
-                -1_000_000,
-                180
-            )
-
-
-    def test_salario_cero_genera_error(self):
-
-        with self.assertRaises(
-            SalarioInvalidoException
-        ):
-            calcular_prima(
-                0,
-                180
-            )
-
-
-    def test_fecha_invalida_genera_error(self):
-        ingreso = datetime(
-            2025,
-            5,
-            10
-        )
-
-        retiro = datetime(
-            2025,
-            2,
-            10
-        )
-
-        with self.assertRaises(
-            FechaInvalidaException
-        ):
-            calcular_dias(
-                ingreso,
-                retiro
-            )
-
-
-    def test_tipo_retiro_invalido_genera_error(self):
-        ingreso = datetime(
-            2025,
-            1,
-            1
-        )
-
-        retiro = datetime(
-            2025,
-            12,
-            1
-        )
-
-        with self.assertRaises(
-            TipoRetiroInvalidoException
-        ):
-            calcular_liquidacion(
-                "Vacaciones",
-                2_000_000,
-                ingreso,
-                retiro,
-                0
-            )
-
-
-# ==========================
-# EJECUTAR PRUEBAS
-# ==========================
 
 if __name__ == "__main__":
-    unittest.main(
-        verbosity=2
-    )
+    main()
