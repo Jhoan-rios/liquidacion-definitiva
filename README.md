@@ -2,210 +2,151 @@
 
 ## 📖 Descripción
 
-Este proyecto consiste en el desarrollo de una caluladora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato. El archivo automatiza el cálculo de las prestaciones sociales, indemnizaciones (cuando corresponda) y demás valores relacionados con la terminación del vínculo laboral.
+Este proyecto consiste en el desarrollo de una calculadora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato. El programa automatiza el cálculo de las prestaciones sociales, la indemnización (cuando corresponda) y el valor total de la liquidación, a partir de la información suministrada del empleado.
 
-El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación precisa a partir de la información suministrada del empleado.
+El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación precisa a partir de la información suministrada.
 
 ---
 
-# Entradas
+## 🗂️ Estructura del proyecto
 
-El usuario debe ingresar la siguiente información:
+| Archivo | Responsabilidad |
+|---|---|
+| `logica_liquidacion.py` | Constantes, excepciones personalizadas y todas las funciones de cálculo (lógica de negocio pura, sin entrada/salida de consola). |
+| `main.py` | Interfaz de consola: solicita los datos al usuario, invoca la lógica y muestra el resultado o los errores. |
+| `test_liquidacion.py` | Pruebas unitarias (`unittest`) que validan cada función de cálculo y el manejo de errores. |
+| `Liquidacion_actualizada_con_salario_restante.xlsx` | Tablero de casos de prueba en Excel: aplica manualmente la misma lógica de cálculo sobre casos normales, excepcionales y de error, para verificar los resultados de forma visual. |
 
-## Datos del empleado
+---
 
-- Nombre del empleado.
+## ▶️ Cómo ejecutar
+
+**Calcular una liquidación por consola:**
+
+```bash
+python main.py
+```
+
+**Ejecutar las pruebas unitarias:**
+
+```bash
+python -m unittest test_liquidacion.py -v
+```
+
+---
+
+## 📥 Entradas
+
+El usuario debe ingresar la siguiente información a través de `main.py`:
+
+- Tipo de retiro (seleccionado de una lista numerada).
 - Salario mensual.
-- Fecha de ingreso.
-- Fecha de retiro.
-- Días de vacaciones utilizados
-- Tipo de terminación del contrato.
+- Fecha de ingreso (`AAAA-MM-DD`).
+- Fecha de retiro (`AAAA-MM-DD`).
+- Días de vacaciones ya disfrutados.
 
-## Tipo de terminación
+## Tipos de retiro soportados
 
-### Casos normales
+- `Renuncia`
+- `Despido con justa causa`
+- `Despido sin justa causa`
 
-- Renuncia del empleado.
-- Terminación con justa causa.
-- Terminación sin justa causa.
+En los dos primeros casos **no** se calcula indemnización. En el tercero sí.
 
-### Casos extraordinarios
-
-- Empleado con salario alto.
-- Empleado con salario bajo.
-- Vacaciones agotadas
-- sin intereses de cesantías
-
-### Casos de error o datos inválidos.
-
-Salario 0
-Fecha de retiro antes de Fecha de ingreso
-Sin fecha de retiro
-Dias de vacaciones negativas
-- 
 ---
 
-# Proceso
+## ⚙️ Proceso
 
-Una vez ingresada la información, el sistema realiza automáticamente las siguientes operaciones:
+Una vez ingresada la información, el sistema realiza las siguientes operaciones (implementadas en `logica_liquidacion.py`):
 
-1. Valida que los datos ingresados sean correctos.
-2. Identifica el tipo de terminación del contrato.
-3. Calcula los días trabajados.
-4. Calcula las prestaciones sociales:
-   - Cesantías.
-   - Intereses sobre cesantías.
+1. **Valida el salario**: debe ser mayor que cero (`SalarioInvalidoException` en caso contrario).
+2. **Valida las fechas**: la fecha de retiro no puede ser nula ni anterior a la fecha de ingreso (`FechaInvalidaException` en caso contrario).
+3. **Calcula los días trabajados** entre la fecha de ingreso y la fecha de retiro.
+4. **Calcula las prestaciones sociales**:
+   - Salario restante del último mes trabajado.
    - Prima de servicios.
-   - Vacaciones.
-5. Calcula la indemnización cuando corresponda.
-6. Suma todos los conceptos para obtener el valor total de la liquidación.
-7. Muestra mensajes de error cuando existan datos inválidos.
+   - Cesantías.
+   - Intereses sobre cesantías (12% anual proporcional a los días trabajados).
+   - Vacaciones pendientes (descontando las ya disfrutadas, nunca negativas).
+5. **Calcula la indemnización** únicamente si el tipo de retiro es `Despido sin justa causa`, incluyendo el incremento por años adicionales de servicio (`TipoRetiroInvalidoException` si el tipo ingresado no es ninguno de los tres soportados).
+6. **Suma todos los conceptos** para obtener el valor total de la liquidación.
+7. **Muestra mensajes de error** claros cuando los datos son inválidos.
 
 ---
 
-# Salidas
+## 📤 Salidas
 
 El sistema genera como resultado:
 
-- Días trabajados.
-- Valor de intereses sobre cesantías.
-- Valor de prima de servicios.
-- Valor de vacaciones.
-- Valor de indemnización (cuando aplique).
-- Valor total de la liquidación.
-- Mensajes de validación o error.
+- Valor total de la liquidación (impreso en consola por `main.py`).
+- Mensajes de error específicos según el tipo de excepción capturada (salario inválido, fecha inválida o tipo de retiro inválido).
 
 ---
 
-# 🧪 Casos de Prueba
+## 🧪 Casos de prueba (`test_liquidacion.py`)
 
-## Casos Normales
+El proyecto cuenta con **13 pruebas unitarias** que cubren:
 
-### 1. Renuncia
+### Casos normales
 
-**Entrada**
+- Cálculo de prima para 180 días.
+- Cálculo de cesantías para 360 días.
+- Cálculo de intereses sobre cesantías para 360 días.
+- Cálculo del salario restante según el día del mes de retiro.
+- Cálculo de vacaciones con días ya disfrutados.
+- Cálculo de vacaciones que nunca resulta negativo, aunque los días disfrutados excedan lo generado.
+- Cálculo de indemnización para 360 días de servicio.
+- Cálculo de días trabajados entre dos fechas.
+- Liquidación completa por renuncia (resultado mayor que cero).
 
-- Tipo de terminación: Renuncia.
-- Datos completos del empleado.
+### Casos de error
 
-**Resultado esperado**
-
-- Se calculan las prestaciones sociales.
-- No se calcula indemnización.
-
----
-
-### 2. Terminación con Justa Causa
-
-**Entrada**
-
-- Tipo de terminación: Con justa causa.
-
-**Resultado esperado**
-
-- Se calculan las prestaciones sociales.
-- No se calcula indemnización.
+- Salario negativo → `SalarioInvalidoException`.
+- Salario igual a cero → `SalarioInvalidoException`.
+- Fecha de retiro anterior a la fecha de ingreso → `FechaInvalidaException`.
+- Tipo de retiro no soportado (ej. `"Vacaciones"`) → `TipoRetiroInvalidoException`.
 
 ---
 
-### 3. Terminación sin Justa Causa
+## 📊 Casos de prueba en Excel (`Liquidacion_actualizada_con_salario_restante.xlsx`)
 
-**Entrada**
+Además de las pruebas en Python, el proyecto incluye un tablero en Excel que aplica manualmente la misma lógica de cálculo, organizado en tres bloques:
 
-- Tipo de terminación: Sin justa causa.
+### Casos normales
 
-**Resultado esperado**
+- Despido con justa causa.
+- Renuncia voluntaria.
+- Despido sin justa causa.
 
-- Se calculan las prestaciones sociales.
-- Se calcula la indemnización correspondiente.
+En todos se calculan días trabajados, salario restante, prima, cesantías, intereses y vacaciones; la indemnización solo aplica en el despido sin justa causa.
 
----
+### Casos excepcionales
 
-# Casos Extraordinarios
+- Salario alto.
+- Salario bajo.
+- Vacaciones agotadas.
+- Sin intereses de cesantía.
 
-## 1. Empleado con Salario Alto
+Estos casos ponen a prueba valores límite (salarios muy altos o muy bajos, vacaciones que superan lo generado, tasa de interés en cero), pero **no especifican un tipo de retiro** en su descripción. Para que la indemnización y la liquidación definitiva **siempre arrojen un resultado numérico** en lugar de quedar vacías, se asumió `Despido sin justa causa` en los cuatro casos; este supuesto queda documentado en un comentario sobre la celda del encabezado "Indemnización (Si aplica)" del bloque.
 
-**Objetivo**
+### Casos de error
 
-Verificar el correcto cálculo para empleados con salarios elevados.
+- Salario en 0.
+- Fecha de retiro anterior a la fecha de ingreso.
+- Sin fecha de retiro.
+- Días de vacaciones negativos.
 
-**Resultado esperado**
-
-- Todos los valores se calculan correctamente.
-- No existen errores por valores altos.
-
----
-
-## 2. Empleado con Salario Bajo
-
-**Objetivo**
-
-Verificar el cálculo para empleados con salarios bajos.
-
-**Resultado esperado**
-
-- Se calculan correctamente las prestaciones sociales.
-- Se aplica el auxilio de transporte cuando corresponda.
+Aquí el dato de salida esperado es la palabra `ERROR` junto con el mensaje de la excepción correspondiente (`SalarioInvalidoException` o `FechaInvalidaException`), reflejando que el sistema debe rechazar esos datos en vez de calcular una liquidación.
 
 ---
 
-# Casos de Error
+## 🛠️ Tecnologías utilizadas
 
-## 1. Salario Negativo
-
-**Entrada**
-
-- Salario menor que cero.
-
-**Resultado esperado**
-
-- Mostrar un mensaje indicando que el salario no puede ser negativo.
+- Python 3
+- `unittest` (pruebas unitarias)
+- Microsoft Excel (tablero de verificación de casos de prueba)
 
 ---
-
-## 2. Fecha de Retiro Anterior a la Fecha de Ingreso
-
-**Resultado esperado**
-
-- Mostrar un mensaje indicando que las fechas son inválidas.
-
----
-
-## 3. Campos Vacíos
-
-**Resultado esperado**
-
-- Solicitar al usuario completar todos los datos antes de realizar el cálculo.
-
----
-
-## 4. Tipo de Terminación Inválido
-
-**Resultado esperado**
-
-- Mostrar un mensaje indicando que el tipo de terminación no existe.
-
----
-
-## 5. Datos No Numéricos
-
-**Resultado esperado**
-
-- Mostrar un mensaje indicando que el dato ingresado es inválido.
-
----
-
-# Tecnologías Utilizadas
-
-- Microsoft Excel
-- Fórmulas de Excel
-- Python
-
----
-
-# Objetivo del Proyecto
-
-Desarrollar una herramienta en Microsoft Excel que permita calcular de forma rápida, precisa y confiable la liquidación definitiva de un empleado, considerando distintos escenarios de terminación del contrato y validando posibles errores en la información ingresada.
 
 ## 👥 Integrantes
 
