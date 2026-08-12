@@ -38,7 +38,10 @@ El usuario debe ingresar la siguiente información:
 
 ### Casos de error o datos inválidos.
 
-
+Salario 0
+Fecha de retiro antes de Fecha de ingreso
+Sin fecha de retiro
+Dias de vacaciones negativas
 - 
 ---
 
