@@ -35,6 +35,10 @@ class TipoRetiroInvalidoException(Exception):
     pass
 
 
+class VacacionesInvalidasException(Exception):
+    pass
+
+
 # ==========================
 # VALIDACIONES
 # ==========================
@@ -43,6 +47,13 @@ def validar_salario(salario):
     if salario <= 0:
         raise SalarioInvalidoException(
             "El salario debe ser mayor que cero."
+        )
+
+
+def validar_vacaciones_disfrutadas(vacaciones_disfrutadas):
+    if vacaciones_disfrutadas < 0:
+        raise VacacionesInvalidasException(
+            "Los días de vacaciones disfrutadas no pueden ser negativos."
         )
 
 
@@ -93,6 +104,7 @@ def calcular_vacaciones(
     vacaciones_disfrutadas
 ):
     validar_salario(salario)
+    validar_vacaciones_disfrutadas(vacaciones_disfrutadas)
 
     vacaciones_generadas = (
         salario * dias

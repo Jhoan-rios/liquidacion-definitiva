@@ -13,6 +13,7 @@ from logica_liquidacion import (
     SalarioInvalidoException,
     FechaInvalidaException,
     TipoRetiroInvalidoException,
+    VacacionesInvalidasException,
 )
 
 
@@ -85,6 +86,8 @@ def main():
         print(f"\nError de fecha: {e}")
     except TipoRetiroInvalidoException as e:
         print(f"\nError de tipo de retiro: {e}")
+    except VacacionesInvalidasException as e:
+        print(f"\nError de vacaciones: {e}")
 
 
 if __name__ == "__main__":

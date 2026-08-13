@@ -22,6 +22,7 @@ from logica_liquidacion import (
     SalarioInvalidoException,
     FechaInvalidaException,
     TipoRetiroInvalidoException,
+    VacacionesInvalidasException,
 )
 
 
@@ -242,6 +243,17 @@ class LiquidacionTest(unittest.TestCase):
             calcular_dias(
                 ingreso,
                 retiro
+            )
+
+    def test_vacaciones_negativas_genera_error(self):
+
+        with self.assertRaises(
+            VacacionesInvalidasException
+        ):
+            calcular_vacaciones(
+                3_500_000,
+                365,
+                -5
             )
 
     def test_tipo_retiro_invalido_genera_error(self):
