@@ -61,16 +61,17 @@ Una vez ingresada la información, el sistema realiza las siguientes operaciones
 
 1. **Valida el salario**: debe ser mayor que cero (`SalarioInvalidoException` en caso contrario).
 2. **Valida las fechas**: la fecha de retiro no puede ser nula ni anterior a la fecha de ingreso (`FechaInvalidaException` en caso contrario).
-3. **Calcula los días trabajados** entre la fecha de ingreso y la fecha de retiro.
-4. **Calcula las prestaciones sociales**:
+3. **Valida los días de vacaciones disfrutadas**: no pueden ser negativos (`VacacionesInvalidasException` en caso contrario).
+4. **Calcula los días trabajados** entre la fecha de ingreso y la fecha de retiro.
+5. **Calcula las prestaciones sociales**:
    - Salario restante del último mes trabajado.
    - Prima de servicios.
    - Cesantías.
    - Intereses sobre cesantías (12% anual proporcional a los días trabajados).
    - Vacaciones pendientes (descontando las ya disfrutadas, nunca negativas).
-5. **Calcula la indemnización** únicamente si el tipo de retiro es `Despido sin justa causa`, incluyendo el incremento por años adicionales de servicio (`TipoRetiroInvalidoException` si el tipo ingresado no es ninguno de los tres soportados).
-6. **Suma todos los conceptos** para obtener el valor total de la liquidación.
-7. **Muestra mensajes de error** claros cuando los datos son inválidos.
+6. **Calcula la indemnización** únicamente si el tipo de retiro es `Despido sin justa causa`, incluyendo el incremento por años adicionales de servicio (`TipoRetiroInvalidoException` si el tipo ingresado no es ninguno de los tres soportados).
+7. **Suma todos los conceptos** para obtener el valor total de la liquidación.
+8. **Muestra mensajes de error** claros cuando los datos son inválidos.
 
 ---
 
@@ -85,7 +86,7 @@ El sistema genera como resultado:
 
 ## 🧪 Casos de prueba (`test_liquidacion.py`)
 
-El proyecto cuenta con **13 pruebas unitarias** que cubren:
+El proyecto cuenta con **14 pruebas unitarias** que cubren:
 
 ### Casos normales
 
@@ -104,6 +105,7 @@ El proyecto cuenta con **13 pruebas unitarias** que cubren:
 - Salario negativo → `SalarioInvalidoException`.
 - Salario igual a cero → `SalarioInvalidoException`.
 - Fecha de retiro anterior a la fecha de ingreso → `FechaInvalidaException`.
+- Días de vacaciones disfrutadas negativos → `VacacionesInvalidasException`.
 - Tipo de retiro no soportado (ej. `"Vacaciones"`) → `TipoRetiroInvalidoException`.
 
 ---
@@ -136,7 +138,7 @@ Estos casos ponen a prueba valores límite (salarios muy altos o muy bajos, vaca
 - Sin fecha de retiro.
 - Días de vacaciones negativos.
 
-Aquí el dato de salida esperado es la palabra `ERROR` junto con el mensaje de la excepción correspondiente (`SalarioInvalidoException` o `FechaInvalidaException`), reflejando que el sistema debe rechazar esos datos en vez de calcular una liquidación.
+Aquí el dato de salida esperado es la palabra `ERROR` junto con el mensaje de la excepción correspondiente (`SalarioInvalidoException`, `FechaInvalidaException` o `VacacionesInvalidasException`), reflejando que el sistema debe rechazar esos datos en vez de calcular una liquidación.
 
 ---
 
