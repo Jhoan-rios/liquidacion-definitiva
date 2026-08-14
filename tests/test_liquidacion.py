@@ -10,7 +10,11 @@ o simplemente:
 import unittest
 from datetime import datetime
 
-from logica_liquidacion import (
+import sys
+
+sys.path.append("src")
+
+from model.logica_liquidacion import (
     calcular_dias,
     calcular_salario_restante,
     calcular_prima,

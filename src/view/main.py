@@ -5,10 +5,13 @@ Solicita los datos al usuario, invoca la lógica de negocio
 (logica_liquidacion.py) y muestra el resultado o el error
 correspondiente.
 """
+import sys
+
+sys.path.append("src")
 
 from datetime import datetime
 
-from logica_liquidacion import (
+from model.logica_liquidacion import (
     calcular_liquidacion,
     SalarioInvalidoException,
     FechaInvalidaException,

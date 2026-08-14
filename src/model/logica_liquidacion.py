@@ -5,6 +5,8 @@ Contiene las constantes, excepciones personalizadas y funciones de cálculo.
 No contiene código de interfaz (consola) ni pruebas unitarias.
 """
 
+
+
 from datetime import datetime
 
 
