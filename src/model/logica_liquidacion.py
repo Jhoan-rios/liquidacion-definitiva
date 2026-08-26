@@ -1,213 +1,320 @@
 """
-Módulo de lógica de negocio para el cálculo de liquidación laboral.
-
-Contiene las constantes, excepciones personalizadas y funciones de cálculo.
-No contiene código de interfaz (consola) ni pruebas unitarias.
+Lógica de negocio para el cálculo de la liquidación laboral.
 """
-
-
 
 from datetime import datetime
 
+from model.excepciones import (
+    FechaInvalidaError,
+    SalarioInvalidoError,
+    TipoRetiroInvalidoError,
+    VacacionesInvalidasError,
+)
 
-# ==========================
-# CONSTANTES
-# ==========================
 
-DIAS_ANO = 360
-DIAS_MES = 30
-PORCENTAJE_INTERESES = 0.12
+# Constantes de cálculo
+DIAS_DEL_ANO = 360
+DIAS_DEL_MES = 30
+TASA_INTERESES_CESANTIAS = 0.12
+
 DIAS_INDEMNIZACION_BASE = 30
-DIAS_INDEMNIZACION_ADICIONALES = 20
+DIAS_INDEMNIZACION_POR_ANO_ADICIONAL = 20
+
+RENUNCIA = "Renuncia"
+DESPIDO_CON_JUSTA_CAUSA = "Despido con justa causa"
+DESPIDO_SIN_JUSTA_CAUSA = "Despido sin justa causa"
+
+TIPOS_RETIRO_SIN_INDEMNIZACION = {
+    RENUNCIA,
+    DESPIDO_CON_JUSTA_CAUSA,
+}
 
 
-# ==========================
-# EXCEPCIONES
-# ==========================
+def validar_salario(salario: float) -> None:
+    """Valida que el salario sea mayor que cero."""
 
-class SalarioInvalidoException(Exception):
-    pass
-
-
-class FechaInvalidaException(Exception):
-    pass
-
-
-class TipoRetiroInvalidoException(Exception):
-    pass
-
-
-class VacacionesInvalidasException(Exception):
-    pass
-
-
-# ==========================
-# VALIDACIONES
-# ==========================
-
-def validar_salario(salario):
     if salario <= 0:
-        raise SalarioInvalidoException(
+        raise SalarioInvalidoError(
             "El salario debe ser mayor que cero."
         )
 
 
-def validar_vacaciones_disfrutadas(vacaciones_disfrutadas):
+def validar_vacaciones_disfrutadas(
+    vacaciones_disfrutadas: int,
+) -> None:
+    """Valida que los días de vacaciones no sean negativos."""
+
     if vacaciones_disfrutadas < 0:
-        raise VacacionesInvalidasException(
-            "Los días de vacaciones disfrutadas no pueden ser negativos."
+        raise VacacionesInvalidasError(
+            "Los días de vacaciones disfrutadas "
+            "no pueden ser negativos."
         )
 
 
-# ==========================
-# FUNCIONES
-# ==========================
+def calcular_dias_trabajados(
+    fecha_ingreso: datetime,
+    fecha_retiro: datetime,
+) -> int:
+    """Calcula la cantidad de días trabajados."""
 
-def calcular_dias(fecha_ingreso, fecha_retiro):
     if fecha_retiro is None or fecha_retiro < fecha_ingreso:
-        raise FechaInvalidaException(
+        raise FechaInvalidaError(
             "La fecha de retiro es inválida."
         )
 
     return (fecha_retiro - fecha_ingreso).days
 
 
-def calcular_salario_restante(salario, fecha_retiro):
+def calcular_salario_restante(
+    salario: float,
+    fecha_retiro: datetime,
+) -> float:
+    """Calcula el salario correspondiente al último período trabajado."""
+
     validar_salario(salario)
 
-    dias_trabajados_mes = fecha_retiro.day
+    dias_trabajados_del_mes = fecha_retiro.day
 
-    return (salario / DIAS_MES) * dias_trabajados_mes
+    return (
+        salario / DIAS_DEL_MES
+    ) * dias_trabajados_del_mes
 
 
-def calcular_prima(salario, dias):
+def calcular_prima(
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula el valor proporcional de la prima."""
+
     validar_salario(salario)
 
-    return (salario * dias) / DIAS_ANO
+    return calcular_proporcion_anual(
+        salario,
+        dias_trabajados,
+    )
 
 
-def calcular_cesantias(salario, dias):
+def calcular_cesantias(
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula el valor proporcional de las cesantías."""
+
     validar_salario(salario)
 
-    return (salario * dias) / DIAS_ANO
+    return calcular_proporcion_anual(
+        salario,
+        dias_trabajados,
+    )
 
 
-def calcular_intereses(cesantias, dias):
+def calcular_proporcion_anual(
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula un concepto proporcional a los días trabajados."""
+
+    return (
+        salario * dias_trabajados
+    ) / DIAS_DEL_ANO
+
+
+def calcular_intereses(
+    cesantias: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula los intereses sobre las cesantías."""
+
     return (
         cesantias
-        * PORCENTAJE_INTERESES
-        * dias
-    ) / DIAS_ANO
+        * TASA_INTERESES_CESANTIAS
+        * dias_trabajados
+    ) / DIAS_DEL_ANO
 
 
 def calcular_vacaciones(
-    salario,
-    dias,
-    vacaciones_disfrutadas
-):
+    salario: float,
+    dias_trabajados: int,
+    vacaciones_disfrutadas: int,
+) -> float:
+    """Calcula el valor de las vacaciones pendientes."""
+
     validar_salario(salario)
     validar_vacaciones_disfrutadas(vacaciones_disfrutadas)
 
-    vacaciones_generadas = (
-        salario * dias
-    ) / (DIAS_ANO * 2)
+    vacaciones_generadas = calcular_vacaciones_generadas(
+        salario,
+        dias_trabajados,
+    )
 
-    descuento = (
-        salario / DIAS_MES
-    ) * vacaciones_disfrutadas
+    valor_vacaciones_disfrutadas = calcular_valor_vacaciones_disfrutadas(
+        salario,
+        vacaciones_disfrutadas,
+    )
 
     vacaciones_pendientes = (
-        vacaciones_generadas - descuento
+        vacaciones_generadas
+        - valor_vacaciones_disfrutadas
     )
 
     return max(vacaciones_pendientes, 0)
 
 
-def calcular_indemnizacion(salario, dias):
+def calcular_vacaciones_generadas(
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula el valor de vacaciones generado durante el período."""
+
+    return (
+        salario * dias_trabajados
+    ) / (DIAS_DEL_ANO * 2)
+
+
+def calcular_valor_vacaciones_disfrutadas(
+    salario: float,
+    vacaciones_disfrutadas: int,
+) -> float:
+    """Calcula el valor de las vacaciones ya disfrutadas."""
+
+    return (
+        salario / DIAS_DEL_MES
+    ) * vacaciones_disfrutadas
+
+
+def calcular_indemnizacion(
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula la indemnización por despido sin justa causa."""
+
     validar_salario(salario)
 
-    salario_dia = salario / DIAS_MES
+    salario_diario = salario / DIAS_DEL_MES
+    dias_indemnizacion = calcular_dias_indemnizacion(
+        dias_trabajados
+    )
+
+    return salario_diario * dias_indemnizacion
+
+
+def calcular_dias_indemnizacion(
+    dias_trabajados: int,
+) -> float:
+    """Calcula los días que corresponden a la indemnización."""
 
     dias_indemnizacion = DIAS_INDEMNIZACION_BASE
 
-    if dias > DIAS_ANO:
+    if dias_trabajados <= DIAS_DEL_ANO:
+        return dias_indemnizacion
 
-        dias_restantes = dias - DIAS_ANO
+    dias_excedentes = dias_trabajados - DIAS_DEL_ANO
 
-        anos = dias_restantes // DIAS_ANO
+    anos_completos = dias_excedentes // DIAS_DEL_ANO
 
-        dias_indemnizacion += (
-            anos * DIAS_INDEMNIZACION_ADICIONALES
+    dias_indemnizacion += (
+        anos_completos
+        * DIAS_INDEMNIZACION_POR_ANO_ADICIONAL
+    )
+
+    dias_excedentes_del_ultimo_ano = (
+        dias_excedentes % DIAS_DEL_ANO
+    )
+
+    dias_indemnizacion += (
+        dias_excedentes_del_ultimo_ano
+        * DIAS_INDEMNIZACION_POR_ANO_ADICIONAL
+    ) / DIAS_DEL_ANO
+
+    return dias_indemnizacion
+
+
+def calcular_indemnizacion_por_tipo_retiro(
+    tipo_retiro: str,
+    salario: float,
+    dias_trabajados: int,
+) -> float:
+    """Calcula la indemnización según el tipo de retiro."""
+
+    if tipo_retiro in TIPOS_RETIRO_SIN_INDEMNIZACION:
+        return 0
+
+    if tipo_retiro == DESPIDO_SIN_JUSTA_CAUSA:
+        return calcular_indemnizacion(
+            salario,
+            dias_trabajados,
         )
 
-        fraccion = dias_restantes % DIAS_ANO
-
-        dias_indemnizacion += (
-            fraccion
-            * DIAS_INDEMNIZACION_ADICIONALES
-        ) / DIAS_ANO
-
-    return salario_dia * dias_indemnizacion
+    raise TipoRetiroInvalidoError(
+        "Tipo de retiro inválido."
+    )
 
 
 def calcular_liquidacion(
-    tipo_retiro,
-    salario,
-    fecha_ingreso,
-    fecha_retiro,
-    vacaciones_disfrutadas
-):
-    dias = calcular_dias(
+    tipo_retiro: str,
+    salario: float,
+    fecha_ingreso: datetime,
+    fecha_retiro: datetime,
+    vacaciones_disfrutadas: int,
+) -> float:
+    """Calcula el valor total de la liquidación laboral."""
+
+    dias_trabajados = calcular_dias_trabajados(
         fecha_ingreso,
-        fecha_retiro
+        fecha_retiro,
     )
 
     salario_restante = calcular_salario_restante(
         salario,
-        fecha_retiro
+        fecha_retiro,
     )
 
     prima = calcular_prima(
         salario,
-        dias
+        dias_trabajados,
     )
 
     cesantias = calcular_cesantias(
         salario,
-        dias
+        dias_trabajados,
     )
 
     intereses = calcular_intereses(
         cesantias,
-        dias
+        dias_trabajados,
     )
 
     vacaciones = calcular_vacaciones(
         salario,
-        dias,
-        vacaciones_disfrutadas
+        dias_trabajados,
+        vacaciones_disfrutadas,
     )
 
-    if tipo_retiro == "Renuncia":
+    indemnizacion = calcular_indemnizacion_por_tipo_retiro(
+        tipo_retiro,
+        salario,
+        dias_trabajados,
+    )
 
-        indemnizacion = 0
+    return sumar_conceptos_liquidacion(
+        salario_restante,
+        prima,
+        cesantias,
+        intereses,
+        vacaciones,
+        indemnizacion,
+    )
 
-    elif tipo_retiro == "Despido con justa causa":
 
-        indemnizacion = 0
-
-    elif tipo_retiro == "Despido sin justa causa":
-
-        indemnizacion = calcular_indemnizacion(
-            salario,
-            dias
-        )
-
-    else:
-
-        raise TipoRetiroInvalidoException(
-            "Tipo de retiro inválido."
-        )
+def sumar_conceptos_liquidacion(
+    salario_restante: float,
+    prima: float,
+    cesantias: float,
+    intereses: float,
+    vacaciones: float,
+    indemnizacion: float,
+) -> float:
+    """Suma todos los conceptos que componen la liquidación."""
 
     return (
         salario_restante
