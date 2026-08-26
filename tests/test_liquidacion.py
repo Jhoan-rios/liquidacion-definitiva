@@ -1,8 +1,14 @@
 import sys
+from pathlib import Path
 import unittest
 from datetime import datetime
 
-sys.path.append("src")
+
+# Agrega la carpeta src al path del proyecto
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SRC_PATH = PROJECT_ROOT / "src"
+
+sys.path.insert(0, str(SRC_PATH))
 
 from model.logica_liquidacion import (
     RENUNCIA,
