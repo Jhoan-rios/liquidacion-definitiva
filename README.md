@@ -2,35 +2,124 @@
 
 ## 📖 Descripción
 
-Este proyecto consiste en el desarrollo de una calculadora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato. El programa automatiza el cálculo de las prestaciones sociales, la indemnización (cuando corresponda) y el valor total de la liquidación, a partir de la información suministrada del empleado.
+Este proyecto consiste en el desarrollo de una calculadora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato.
 
-El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación precisa a partir de la información suministrada.
+El programa automatiza el cálculo de las prestaciones sociales, la indemnización cuando corresponda y el valor total de la liquidación, a partir de la información suministrada del empleado.
+
+El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación a partir de la información suministrada.
 
 ---
 
 ## 🗂️ Estructura del proyecto
 
-| Archivo | Responsabilidad |
-|---|---|
-| `logica_liquidacion.py` | Constantes, excepciones personalizadas y todas las funciones de cálculo (lógica de negocio pura, sin entrada/salida de consola). |
-| `main.py` | Interfaz de consola: solicita los datos al usuario, invoca la lógica y muestra el resultado o los errores. |
-| `test_liquidacion.py` | Pruebas unitarias (`unittest`) que validan cada función de cálculo y el manejo de errores. |
-| `Liquidacion_actualizada_con_salario_restante.xlsx` | Tablero de casos de prueba en Excel: aplica manualmente la misma lógica de cálculo sobre casos normales, excepcionales y de error, para verificar los resultados de forma visual. |
+El proyecto está organizado mediante una separación de responsabilidades entre la lógica de negocio, la interfaz de consola y las pruebas unitarias.
+
+```text
+liquidacion-definitiva/
+│
+├── doc/
+│   └── Documentación del proyecto
+│
+├── src/
+│   ├── controller/
+│   │   └── Componentes de control de la aplicación
+│   │
+│   ├── model/
+│   │   ├── __init__.py
+│   │   ├── excepciones.py
+│   │   └── logica_liquidacion.py
+│   │
+│   └── view/
+│       └── main.py
+│
+├── tests/
+│   ├── __init__.py
+│   └── test_liquidacion.py
+│
+├── .gitignore
+├── README.md
+└── Liquidacion definitiva.xlsx
+```
+
+### Responsabilidad de cada componente
+
+| Archivo / Carpeta                 | Responsabilidad                                                                                              |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `src/model/logica_liquidacion.py` | Contiene las constantes y funciones que implementan la lógica de negocio y los cálculos de la liquidación.   |
+| `src/model/excepciones.py`        | Contiene las excepciones personalizadas utilizadas para controlar datos inválidos.                           |
+| `src/view/main.py`                | Interfaz de consola: solicita los datos al usuario, invoca la lógica y muestra el resultado o los errores.   |
+| `src/controller/`                 | Contiene los componentes destinados a coordinar el flujo entre la interfaz y la lógica de negocio.           |
+| `tests/test_liquidacion.py`       | Pruebas unitarias utilizando `unittest` para validar los cálculos, validaciones y manejo de errores.         |
+| `Liquidacion definitiva.xlsx`     | Tablero de casos de prueba utilizado como apoyo para verificar manualmente los resultados de la liquidación. |
 
 ---
 
-## ▶️ Cómo ejecutar
+## 🏗️ Arquitectura
 
-**Calcular una liquidación por consola:**
+El proyecto utiliza una separación por responsabilidades:
+
+### Model
+
+Contiene la lógica de negocio de la aplicación.
+
+`logica_liquidacion.py` contiene funciones independientes para:
+
+* Calcular días trabajados.
+* Calcular salario restante.
+* Calcular prima.
+* Calcular cesantías.
+* Calcular intereses sobre las cesantías.
+* Calcular vacaciones.
+* Calcular indemnización.
+* Calcular la liquidación total.
+
+`excepciones.py` contiene las excepciones personalizadas:
+
+* `FechaInvalidaError`
+* `SalarioInvalidoError`
+* `TipoRetiroInvalidoError`
+* `VacacionesInvalidasError`
+
+Las excepciones se mantienen separadas de la lógica de negocio para mejorar la organización y el mantenimiento del código.
+
+### View
+
+`main.py` contiene la interfaz de consola y se encarga de interactuar con el usuario.
+
+### Controller
+
+La carpeta `controller` está destinada a los componentes encargados de coordinar el flujo entre la interfaz y la lógica de negocio.
+
+### Tests
+
+La carpeta `tests` contiene las pruebas unitarias que permiten verificar el comportamiento esperado del sistema.
+
+---
+
+# ▶️ Cómo ejecutar
+
+## Calcular una liquidación por consola
+
+Desde la carpeta raíz del proyecto ejecutar:
 
 ```bash
-python main.py
+python src/view/main.py
 ```
 
-**Ejecutar las pruebas unitarias:**
+La aplicación solicitará los datos necesarios y mostrará el resultado de la liquidación.
+
+## Ejecutar las pruebas unitarias
+
+Desde la carpeta raíz del proyecto ejecutar:
 
 ```bash
-python -m unittest test_liquidacion.py -v
+python -m unittest tests.test_liquidacion -v
+```
+
+También se pueden ejecutar todas las pruebas mediante descubrimiento automático:
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
 ```
 
 ---
@@ -39,39 +128,53 @@ python -m unittest test_liquidacion.py -v
 
 El usuario debe ingresar la siguiente información a través de `main.py`:
 
-- Tipo de retiro (seleccionado de una lista numerada).
-- Salario mensual.
-- Fecha de ingreso (`AAAA-MM-DD`).
-- Fecha de retiro (`AAAA-MM-DD`).
-- Días de vacaciones ya disfrutados.
+* Tipo de retiro.
+* Salario mensual.
+* Fecha de ingreso (`AAAA-MM-DD`).
+* Fecha de retiro (`AAAA-MM-DD`).
+* Días de vacaciones ya disfrutados.
 
 ## Tipos de retiro soportados
 
-- `Renuncia`
-- `Despido con justa causa`
-- `Despido sin justa causa`
+* `Renuncia`
+* `Despido con justa causa`
+* `Despido sin justa causa`
 
-En los dos primeros casos **no** se calcula indemnización. En el tercero sí.
+En los casos de `Renuncia` y `Despido con justa causa` no se calcula indemnización.
+
+En el caso de `Despido sin justa causa` se calcula la indemnización correspondiente.
 
 ---
 
 ## ⚙️ Proceso
 
-Una vez ingresada la información, el sistema realiza las siguientes operaciones (implementadas en `logica_liquidacion.py`):
+Una vez ingresada la información, el sistema realiza las siguientes operaciones:
 
-1. **Valida el salario**: debe ser mayor que cero (`SalarioInvalidoException` en caso contrario).
-2. **Valida las fechas**: la fecha de retiro no puede ser nula ni anterior a la fecha de ingreso (`FechaInvalidaException` en caso contrario).
-3. **Valida los días de vacaciones disfrutadas**: no pueden ser negativos (`VacacionesInvalidasException` en caso contrario).
+1. **Valida el salario**: debe ser mayor que cero. En caso contrario se genera `SalarioInvalidoError`.
+
+2. **Valida las fechas**: la fecha de retiro no puede ser anterior a la fecha de ingreso. En caso contrario se genera `FechaInvalidaError`.
+
+3. **Valida los días de vacaciones disfrutadas**: no pueden ser negativos. En caso contrario se genera `VacacionesInvalidasError`.
+
 4. **Calcula los días trabajados** entre la fecha de ingreso y la fecha de retiro.
-5. **Calcula las prestaciones sociales**:
-   - Salario restante del último mes trabajado.
-   - Prima de servicios.
-   - Cesantías.
-   - Intereses sobre cesantías (12% anual proporcional a los días trabajados).
-   - Vacaciones pendientes (descontando las ya disfrutadas, nunca negativas).
-6. **Calcula la indemnización** únicamente si el tipo de retiro es `Despido sin justa causa`, incluyendo el incremento por años adicionales de servicio (`TipoRetiroInvalidoException` si el tipo ingresado no es ninguno de los tres soportados).
-7. **Suma todos los conceptos** para obtener el valor total de la liquidación.
-8. **Muestra mensajes de error** claros cuando los datos son inválidos.
+
+5. **Calcula el salario restante** correspondiente al último período trabajado.
+
+6. **Calcula las prestaciones sociales**:
+
+   * Salario restante.
+   * Prima de servicios.
+   * Cesantías.
+   * Intereses sobre las cesantías.
+   * Vacaciones pendientes.
+
+7. **Calcula la indemnización** según el tipo de retiro. La indemnización se genera únicamente para `Despido sin justa causa`.
+
+8. **Valida el tipo de retiro**. Si no corresponde a uno de los tipos soportados, se genera `TipoRetiroInvalidoError`.
+
+9. **Suma todos los conceptos** para obtener el valor total de la liquidación.
+
+10. **Muestra el resultado o el mensaje de error correspondiente** en la interfaz de consola.
 
 ---
 
@@ -79,80 +182,148 @@ Una vez ingresada la información, el sistema realiza las siguientes operaciones
 
 El sistema genera como resultado:
 
-- Valor total de la liquidación (impreso en consola por `main.py`).
-- Mensajes de error específicos según el tipo de excepción capturada (salario inválido, fecha inválida o tipo de retiro inválido).
+* Valor del salario restante.
+* Valor de la prima.
+* Valor de las cesantías.
+* Valor de los intereses sobre las cesantías.
+* Valor de las vacaciones pendientes.
+* Valor de la indemnización cuando corresponda.
+* Valor total de la liquidación.
+* Mensajes de error específicos cuando los datos suministrados no son válidos.
 
 ---
 
-## 🧪 Casos de prueba (`test_liquidacion.py`)
+# 🧪 Casos de prueba
 
-El proyecto cuenta con **14 pruebas unitarias** que cubren:
+Las pruebas unitarias se encuentran en:
+
+```text
+tests/test_liquidacion.py
+```
+
+Las pruebas utilizan la biblioteca `unittest` de Python.
+
+Se verifican diferentes componentes de la lógica de liquidación, incluyendo cálculos, validaciones, excepciones y liquidaciones completas.
 
 ### Casos normales
 
-- Cálculo de prima para 180 días.
-- Cálculo de cesantías para 360 días.
-- Cálculo de intereses sobre cesantías para 360 días.
-- Cálculo del salario restante según el día del mes de retiro.
-- Cálculo de vacaciones con días ya disfrutados.
-- Cálculo de vacaciones que nunca resulta negativo, aunque los días disfrutados excedan lo generado.
-- Cálculo de indemnización para 360 días de servicio.
-- Cálculo de días trabajados entre dos fechas.
-- Liquidación completa por renuncia (resultado mayor que cero).
+Entre los casos probados se encuentran:
+
+* Cálculo de días trabajados.
+* Cálculo de salario restante.
+* Cálculo de prima.
+* Cálculo de cesantías.
+* Cálculo de intereses sobre cesantías.
+* Cálculo de vacaciones generadas.
+* Cálculo de vacaciones disfrutadas.
+* Cálculo de vacaciones pendientes.
+* Cálculo de indemnización.
+* Cálculo de días de indemnización.
+* Cálculo de indemnización según el tipo de retiro.
+* Liquidación completa por renuncia.
+* Liquidación completa por despido sin justa causa.
+* Suma de los conceptos de liquidación.
 
 ### Casos de error
 
-- Salario negativo → `SalarioInvalidoException`.
-- Salario igual a cero → `SalarioInvalidoException`.
-- Fecha de retiro anterior a la fecha de ingreso → `FechaInvalidaException`.
-- Días de vacaciones disfrutadas negativos → `VacacionesInvalidasException`.
-- Tipo de retiro no soportado (ej. `"Vacaciones"`) → `TipoRetiroInvalidoException`.
+Las pruebas también verifican:
+
+* Salario negativo → `SalarioInvalidoError`.
+* Salario igual a cero → `SalarioInvalidoError`.
+* Fecha de retiro anterior a la fecha de ingreso → `FechaInvalidaError`.
+* Días de vacaciones disfrutadas negativos → `VacacionesInvalidasError`.
+* Tipo de retiro no soportado → `TipoRetiroInvalidoError`.
+
+Para ejecutar las pruebas:
+
+```bash
+python -m unittest tests.test_liquidacion -v
+```
 
 ---
 
-## 📊 Casos de prueba en Excel (`Liquidacion_actualizada_con_salario_restante.xlsx`)
+# 📊 Casos de prueba en Excel
 
-Además de las pruebas en Python, el proyecto incluye un tablero en Excel que aplica manualmente la misma lógica de cálculo, organizado en tres bloques:
+Además de las pruebas unitarias en Python, el proyecto incluye un archivo de Excel utilizado como apoyo para la verificación manual de los cálculos:
+
+```text
+Liquidacion definitiva.xlsx
+```
+
+El archivo permite comparar diferentes escenarios de liquidación y verificar visualmente los resultados obtenidos.
 
 ### Casos normales
 
-- Despido con justa causa.
-- Renuncia voluntaria.
-- Despido sin justa causa.
+Se contemplan escenarios como:
 
-En todos se calculan días trabajados, salario restante, prima, cesantías, intereses y vacaciones; la indemnización solo aplica en el despido sin justa causa.
+* Despido con justa causa.
+* Renuncia voluntaria.
+* Despido sin justa causa.
+
+En estos escenarios se verifican los diferentes conceptos que componen la liquidación y la aplicación de la indemnización según corresponda.
 
 ### Casos excepcionales
 
-- Salario alto.
-- Salario bajo.
-- Vacaciones agotadas.
-- Sin intereses de cesantía.
+Se contemplan escenarios con diferentes condiciones de entrada, como:
 
-Estos casos ponen a prueba valores límite (salarios muy altos o muy bajos, vacaciones que superan lo generado, tasa de interés en cero), pero **no especifican un tipo de retiro** en su descripción. Para que la indemnización y la liquidación definitiva **siempre arrojen un resultado numérico** en lugar de quedar vacías, se asumió `Despido sin justa causa` en los cuatro casos; este supuesto queda documentado en un comentario sobre la celda del encabezado "Indemnización (Si aplica)" del bloque.
+* Salario alto.
+* Salario bajo.
+* Vacaciones agotadas.
+* Diferentes condiciones para los intereses de cesantías.
+
+Estos casos permiten comprobar el comportamiento del sistema ante valores que se encuentran fuera de los escenarios habituales.
 
 ### Casos de error
 
-- Salario en 0.
-- Fecha de retiro anterior a la fecha de ingreso.
-- Sin fecha de retiro.
-- Días de vacaciones negativos.
+Se contemplan casos como:
 
-Aquí el dato de salida esperado es la palabra `ERROR` junto con el mensaje de la excepción correspondiente (`SalarioInvalidoException`, `FechaInvalidaException` o `VacacionesInvalidasException`), reflejando que el sistema debe rechazar esos datos en vez de calcular una liquidación.
+* Salario en cero.
+* Salario negativo.
+* Fecha de retiro anterior a la fecha de ingreso.
+* Días de vacaciones negativos.
+* Datos inválidos.
 
----
-
-## 🛠️ Tecnologías utilizadas
-
-- Python 3
-- `unittest` (pruebas unitarias)
-- Microsoft Excel (tablero de verificación de casos de prueba)
+El objetivo es verificar que el sistema rechace los datos incorrectos y genere el error correspondiente en lugar de producir una liquidación incorrecta.
 
 ---
 
-## 👥 Integrantes
+# 🛠️ Tecnologías utilizadas
 
-| Nombre | GitHub |
-|--------|--------|
-| Jhoan Ríos | [@jhoan-rios](https://github.com/jhoan-rios) |
+* **Python 3.12**
+* **unittest** — pruebas unitarias.
+* **Microsoft Excel** — tablero de verificación manual de casos de prueba.
+* **Visual Studio Code** — entorno de desarrollo.
+
+---
+
+# 🧹 Principios de calidad de código
+
+El proyecto busca aplicar principios de **Clean Code** y buenas prácticas de desarrollo:
+
+* Funciones pequeñas y con una responsabilidad específica.
+* Nombres descriptivos.
+* Separación de responsabilidades.
+* Constantes para valores utilizados en los cálculos.
+* Excepciones personalizadas.
+* Separación de excepciones y lógica de negocio.
+* Separación entre modelo, vista, controlador y pruebas.
+* Evitar duplicación de código.
+* Documentación mediante docstrings.
+* Código orientado a facilitar el mantenimiento y las pruebas.
+
+---
+
+# 👥 Integrantes
+
+| Nombre       | GitHub                                           |
+| ------------ | ------------------------------------------------ |
+| Jhoan Ríos   | [@jhoan-rios](https://github.com/jhoan-rios)     |
 | Andrés Rosas | [@andres-rosas](https://github.com/andres-rosas) |
+
+---
+
+# 📌 Estado del proyecto
+
+Proyecto desarrollado como parte de las prácticas de programación, con evolución progresiva de la estructura, arquitectura, pruebas unitarias y calidad del código.
+
+La versión actual incorpora una separación de responsabilidades entre la lógica de negocio, las excepciones, la interfaz de consola y las pruebas unitarias.
