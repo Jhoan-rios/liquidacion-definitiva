@@ -1,15 +1,6 @@
 """
-Excepciones personalizadas para la liquidación laboral.
+Excepciones específicas del dominio de liquidación laboral.
 """
-
-
-class FechaInvalidaError(Exception):
-    """Se genera cuando una fecha de retiro es inválida."""
-
-    def __init__(self):
-        super().__init__(
-            "La fecha de retiro es inválida."
-        )
 
 
 class SalarioInvalidoError(Exception):
@@ -18,6 +9,15 @@ class SalarioInvalidoError(Exception):
     def __init__(self):
         super().__init__(
             "El salario debe ser mayor que cero."
+        )
+
+
+class FechaInvalidaError(Exception):
+    """Se genera cuando la fecha de retiro no es válida."""
+
+    def __init__(self):
+        super().__init__(
+            "La fecha de retiro es inválida."
         )
 
 

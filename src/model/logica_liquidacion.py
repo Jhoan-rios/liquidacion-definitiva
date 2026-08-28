@@ -33,7 +33,7 @@ TIPOS_RETIRO_SIN_INDEMNIZACION = {
 
 @dataclass
 class DatosLiquidacion:
-    """Contiene los datos necesarios para calcular una liquidación."""
+    """Datos necesarios para calcular una liquidación."""
 
     tipo_retiro: str
     salario: float
@@ -44,7 +44,7 @@ class DatosLiquidacion:
 
 @dataclass
 class ConceptosLiquidacion:
-    """Contiene los conceptos calculados de una liquidación."""
+    """Conceptos que componen una liquidación."""
 
     salario_restante: float
     prima: float
@@ -157,7 +157,9 @@ def calcular_vacaciones(
     """Calcula el valor de las vacaciones pendientes."""
 
     validar_salario(salario)
-    validar_vacaciones_disfrutadas(vacaciones_disfrutadas)
+    validar_vacaciones_disfrutadas(
+        vacaciones_disfrutadas
+    )
 
     vacaciones_generadas = calcular_vacaciones_generadas(
         salario,

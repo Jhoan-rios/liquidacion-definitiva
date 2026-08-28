@@ -2,7 +2,17 @@
 Interfaz de consola para el cálculo de liquidación laboral.
 """
 
+import sys
 from datetime import datetime
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+SRC_PATH = PROJECT_ROOT / "src"
+
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
+
 
 from model.excepciones import (
     FechaInvalidaError,
@@ -15,6 +25,7 @@ from model.logica_liquidacion import (
     DESPIDO_CON_JUSTA_CAUSA,
     DESPIDO_SIN_JUSTA_CAUSA,
     RENUNCIA,
+    DatosLiquidacion,
     calcular_liquidacion,
 )
 
@@ -98,7 +109,7 @@ def mostrar_tipos_retiro() -> None:
         TIPOS_RETIRO,
         start=1,
     ):
-        print(f"  {indice}. {tipo_retiro}")
+        print(f" {indice}. {tipo_retiro}")
 
 
 def mostrar_resultado(resultado: float) -> None:
@@ -122,25 +133,33 @@ def main() -> None:
     print("=== Calculadora de Liquidación Laboral ===\n")
 
     tipo_retiro = pedir_tipo_retiro()
-    salario = pedir_numero("Salario mensual: ")
+
+    salario = pedir_numero(
+        "Salario mensual: "
+    )
+
     fecha_ingreso = pedir_fecha(
         "Fecha de ingreso (AAAA-MM-DD): "
     )
+
     fecha_retiro = pedir_fecha(
         "Fecha de retiro (AAAA-MM-DD): "
     )
+
     vacaciones_disfrutadas = pedir_entero(
         "Días de vacaciones ya disfrutados: "
     )
 
+    datos = DatosLiquidacion(
+        tipo_retiro=tipo_retiro,
+        salario=salario,
+        fecha_ingreso=fecha_ingreso,
+        fecha_retiro=fecha_retiro,
+        vacaciones_disfrutadas=vacaciones_disfrutadas,
+    )
+
     try:
-        resultado = calcular_liquidacion(
-            tipo_retiro,
-            salario,
-            fecha_ingreso,
-            fecha_retiro,
-            vacaciones_disfrutadas,
-        )
+        resultado = calcular_liquidacion(datos)
 
         mostrar_resultado(resultado)
 
