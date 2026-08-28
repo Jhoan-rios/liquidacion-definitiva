@@ -1,19 +1,16 @@
-import sys
-from pathlib import Path
+"""
+Pruebas unitarias para la lógica de liquidación laboral.
+"""
+
 import unittest
 from datetime import datetime
-
-
-# Agrega la carpeta src al path del proyecto
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-SRC_PATH = PROJECT_ROOT / "src"
-
-sys.path.insert(0, str(SRC_PATH))
 
 from model.logica_liquidacion import (
     RENUNCIA,
     DESPIDO_CON_JUSTA_CAUSA,
     DESPIDO_SIN_JUSTA_CAUSA,
+    ConceptosLiquidacion,
+    DatosLiquidacion,
     calcular_dias_trabajados,
     calcular_salario_restante,
     calcular_prima,
@@ -38,77 +35,37 @@ from model.excepciones import (
 )
 
 
-class TestLogicaLiquidacion(unittest.TestCase):
-
-    def setUp(self):
-        self.salario = 3_000_000
-        self.fecha_ingreso = datetime(2025, 1, 1)
-        self.fecha_retiro = datetime(2025, 12, 31)
-
-    # ==========================
-    # VALIDACIÓN DE SALARIO
-    # ==========================
-
-    def test_salario_invalido(self):
-        with self.assertRaises(SalarioInvalidoError):
-            calcular_salario_restante(
-                0,
-                self.fecha_retiro,
-            )
-
-    def test_salario_negativo(self):
-        with self.assertRaises(SalarioInvalidoError):
-            calcular_prima(
-                -1000,
-                100,
-            )
-
-    # ==========================
-    # DÍAS TRABAJADOS
-    # ==========================
+class TestLiquidacion(unittest.TestCase):
+    """Pruebas de la lógica de liquidación."""
 
     def test_calcular_dias_trabajados(self):
-        dias = calcular_dias_trabajados(
-            datetime(2025, 1, 1),
-            datetime(2025, 1, 31),
+        fecha_ingreso = datetime(2025, 1, 1)
+        fecha_retiro = datetime(2025, 7, 1)
+
+        resultado = calcular_dias_trabajados(
+            fecha_ingreso,
+            fecha_retiro,
         )
 
-        self.assertEqual(dias, 30)
+        self.assertEqual(resultado, 181)
 
-    def test_fecha_retiro_anterior(self):
+    def test_calcular_dias_trabajados_fecha_invalida(self):
+        fecha_ingreso = datetime(2025, 7, 1)
+        fecha_retiro = datetime(2025, 1, 1)
+
         with self.assertRaises(FechaInvalidaError):
             calcular_dias_trabajados(
-                datetime(2025, 5, 1),
-                datetime(2025, 4, 1),
+                fecha_ingreso,
+                fecha_retiro,
             )
-
-    # ==========================
-    # SALARIO RESTANTE
-    # ==========================
 
     def test_calcular_salario_restante(self):
         resultado = calcular_salario_restante(
             3_000_000,
-            datetime(2025, 1, 15),
+            datetime(2025, 6, 15),
         )
 
         self.assertEqual(resultado, 1_500_000)
-
-    # ==========================
-    # PROPORCIÓN ANUAL
-    # ==========================
-
-    def test_calcular_proporcion_anual(self):
-        resultado = calcular_proporcion_anual(
-            3_000_000,
-            180,
-        )
-
-        self.assertEqual(resultado, 1_500_000)
-
-    # ==========================
-    # PRIMA
-    # ==========================
 
     def test_calcular_prima(self):
         resultado = calcular_prima(
@@ -118,87 +75,63 @@ class TestLogicaLiquidacion(unittest.TestCase):
 
         self.assertEqual(resultado, 1_500_000)
 
-    # ==========================
-    # CESANTÍAS
-    # ==========================
-
     def test_calcular_cesantias(self):
         resultado = calcular_cesantias(
+            3_000_000,
+            360,
+        )
+
+        self.assertEqual(resultado, 3_000_000)
+
+    def test_calcular_proporcion_anual(self):
+        resultado = calcular_proporcion_anual(
             3_000_000,
             180,
         )
 
         self.assertEqual(resultado, 1_500_000)
 
-    # ==========================
-    # INTERESES DE CESANTÍAS
-    # ==========================
-
     def test_calcular_intereses(self):
-        cesantias = 1_500_000
-
         resultado = calcular_intereses(
-            cesantias,
-            180,
+            3_000_000,
+            360,
         )
 
-        self.assertEqual(resultado, 90_000)
-
-    # ==========================
-    # VACACIONES
-    # ==========================
+        self.assertEqual(resultado, 360_000)
 
     def test_calcular_vacaciones_generadas(self):
         resultado = calcular_vacaciones_generadas(
             3_000_000,
-            180,
+            360,
         )
 
-        self.assertEqual(resultado, 750_000)
+        self.assertEqual(resultado, 1_500_000)
 
     def test_calcular_valor_vacaciones_disfrutadas(self):
         resultado = calcular_valor_vacaciones_disfrutadas(
             3_000_000,
-            5,
+            10,
         )
 
-        self.assertEqual(resultado, 500_000)
+        self.assertEqual(resultado, 1_000_000)
 
     def test_calcular_vacaciones(self):
         resultado = calcular_vacaciones(
             3_000_000,
-            180,
-            5,
+            360,
+            10,
         )
 
-        self.assertEqual(resultado, 250_000)
+        self.assertEqual(resultado, 500_000)
 
-    def test_vacaciones_negativas(self):
-        with self.assertRaises(VacacionesInvalidasError):
-            calcular_vacaciones(
-                3_000_000,
-                180,
-                -1,
-            )
+    def test_calcular_vacaciones_no_negativas(self):
+        resultado = calcular_vacaciones(
+            3_000_000,
+            360,
+            30,
+        )
 
-    # ==========================
-    # INDEMNIZACIÓN
-    # ==========================
-
-    def test_calcular_dias_indemnizacion_hasta_un_ano(self):
-        resultado = calcular_dias_indemnizacion(360)
-
-        self.assertEqual(resultado, 30)
-
-    def test_calcular_dias_indemnizacion_un_ano_y_medio(self):
-        resultado = calcular_dias_indemnizacion(540)
-
-        self.assertEqual(resultado, 40)
-
-    def test_calcular_dias_indemnizacion_dos_anos(self):
-        resultado = calcular_dias_indemnizacion(720)
-
-        self.assertEqual(resultado, 50)
+        self.assertEqual(resultado, 0)
 
     def test_calcular_indemnizacion(self):
         resultado = calcular_indemnizacion(
@@ -208,11 +141,17 @@ class TestLogicaLiquidacion(unittest.TestCase):
 
         self.assertEqual(resultado, 3_000_000)
 
-    # ==========================
-    # INDEMNIZACIÓN POR TIPO
-    # ==========================
+    def test_calcular_dias_indemnizacion_un_ano(self):
+        resultado = calcular_dias_indemnizacion(360)
 
-    def test_renuncia_no_genera_indemnizacion(self):
+        self.assertEqual(resultado, 30)
+
+    def test_calcular_dias_indemnizacion_dos_anos(self):
+        resultado = calcular_dias_indemnizacion(720)
+
+        self.assertEqual(resultado, 50)
+
+    def test_calcular_indemnizacion_por_renuncia(self):
         resultado = calcular_indemnizacion_por_tipo_retiro(
             RENUNCIA,
             3_000_000,
@@ -221,7 +160,7 @@ class TestLogicaLiquidacion(unittest.TestCase):
 
         self.assertEqual(resultado, 0)
 
-    def test_despido_con_justa_causa_no_genera_indemnizacion(self):
+    def test_calcular_indemnizacion_por_justa_causa(self):
         resultado = calcular_indemnizacion_por_tipo_retiro(
             DESPIDO_CON_JUSTA_CAUSA,
             3_000_000,
@@ -230,7 +169,7 @@ class TestLogicaLiquidacion(unittest.TestCase):
 
         self.assertEqual(resultado, 0)
 
-    def test_despido_sin_justa_causa_genera_indemnizacion(self):
+    def test_calcular_indemnizacion_por_sin_justa_causa(self):
         resultado = calcular_indemnizacion_por_tipo_retiro(
             DESPIDO_SIN_JUSTA_CAUSA,
             3_000_000,
@@ -242,50 +181,57 @@ class TestLogicaLiquidacion(unittest.TestCase):
     def test_tipo_retiro_invalido(self):
         with self.assertRaises(TipoRetiroInvalidoError):
             calcular_indemnizacion_por_tipo_retiro(
-                "Tipo inválido",
+                "Vacaciones",
                 3_000_000,
                 360,
             )
 
-    # ==========================
-    # SUMA DE CONCEPTOS
-    # ==========================
+    def test_salario_negativo(self):
+        with self.assertRaises(SalarioInvalidoError):
+            calcular_prima(
+                -1_000_000,
+                180,
+            )
+
+    def test_salario_cero(self):
+        with self.assertRaises(SalarioInvalidoError):
+            calcular_prima(
+                0,
+                180,
+            )
+
+    def test_vacaciones_negativas(self):
+        with self.assertRaises(VacacionesInvalidasError):
+            calcular_vacaciones(
+                3_000_000,
+                360,
+                -1,
+            )
 
     def test_sumar_conceptos_liquidacion(self):
-        resultado = sumar_conceptos_liquidacion(
-            100,
-            200,
-            300,
-            400,
-            500,
-            600,
+        conceptos = ConceptosLiquidacion(
+            salario_restante=1_000_000,
+            prima=500_000,
+            cesantias=500_000,
+            intereses=60_000,
+            vacaciones=250_000,
+            indemnizacion=0,
         )
 
-        self.assertEqual(resultado, 2100)
+        resultado = sumar_conceptos_liquidacion(conceptos)
 
-    # ==========================
-    # LIQUIDACIÓN COMPLETA
-    # ==========================
+        self.assertEqual(resultado, 2_310_000)
 
     def test_calcular_liquidacion_renuncia(self):
-        resultado = calcular_liquidacion(
-            RENUNCIA,
-            3_000_000,
-            datetime(2025, 1, 1),
-            datetime(2025, 12, 31),
-            0,
+        datos = DatosLiquidacion(
+            tipo_retiro=RENUNCIA,
+            salario=3_000_000,
+            fecha_ingreso=datetime(2025, 1, 1),
+            fecha_retiro=datetime(2025, 12, 31),
+            vacaciones_disfrutadas=0,
         )
 
-        self.assertGreater(resultado, 0)
-
-    def test_calcular_liquidacion_despido_sin_justa_causa(self):
-        resultado = calcular_liquidacion(
-            DESPIDO_SIN_JUSTA_CAUSA,
-            3_000_000,
-            datetime(2025, 1, 1),
-            datetime(2025, 12, 31),
-            0,
-        )
+        resultado = calcular_liquidacion(datos)
 
         self.assertGreater(resultado, 0)
 

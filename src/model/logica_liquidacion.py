@@ -2,6 +2,7 @@
 Lógica de negocio para el cálculo de la liquidación laboral.
 """
 
+from dataclasses import dataclass
 from datetime import datetime
 
 from model.excepciones import (
@@ -30,13 +31,34 @@ TIPOS_RETIRO_SIN_INDEMNIZACION = {
 }
 
 
+@dataclass
+class DatosLiquidacion:
+    """Contiene los datos necesarios para calcular una liquidación."""
+
+    tipo_retiro: str
+    salario: float
+    fecha_ingreso: datetime
+    fecha_retiro: datetime
+    vacaciones_disfrutadas: int
+
+
+@dataclass
+class ConceptosLiquidacion:
+    """Contiene los conceptos calculados de una liquidación."""
+
+    salario_restante: float
+    prima: float
+    cesantias: float
+    intereses: float
+    vacaciones: float
+    indemnizacion: float
+
+
 def validar_salario(salario: float) -> None:
     """Valida que el salario sea mayor que cero."""
 
     if salario <= 0:
-        raise SalarioInvalidoError(
-            "El salario debe ser mayor que cero."
-        )
+        raise SalarioInvalidoError()
 
 
 def validar_vacaciones_disfrutadas(
@@ -45,10 +67,7 @@ def validar_vacaciones_disfrutadas(
     """Valida que los días de vacaciones no sean negativos."""
 
     if vacaciones_disfrutadas < 0:
-        raise VacacionesInvalidasError(
-            "Los días de vacaciones disfrutadas "
-            "no pueden ser negativos."
-        )
+        raise VacacionesInvalidasError()
 
 
 def calcular_dias_trabajados(
@@ -58,9 +77,7 @@ def calcular_dias_trabajados(
     """Calcula la cantidad de días trabajados."""
 
     if fecha_retiro is None or fecha_retiro < fecha_ingreso:
-        raise FechaInvalidaError(
-            "La fecha de retiro es inválida."
-        )
+        raise FechaInvalidaError()
 
     return (fecha_retiro - fecha_ingreso).days
 
@@ -147,9 +164,11 @@ def calcular_vacaciones(
         dias_trabajados,
     )
 
-    valor_vacaciones_disfrutadas = calcular_valor_vacaciones_disfrutadas(
-        salario,
-        vacaciones_disfrutadas,
+    valor_vacaciones_disfrutadas = (
+        calcular_valor_vacaciones_disfrutadas(
+            salario,
+            vacaciones_disfrutadas,
+        )
     )
 
     vacaciones_pendientes = (
@@ -191,6 +210,7 @@ def calcular_indemnizacion(
     validar_salario(salario)
 
     salario_diario = salario / DIAS_DEL_MES
+
     dias_indemnizacion = calcular_dias_indemnizacion(
         dias_trabajados
     )
@@ -245,37 +265,31 @@ def calcular_indemnizacion_por_tipo_retiro(
             dias_trabajados,
         )
 
-    raise TipoRetiroInvalidoError(
-        "Tipo de retiro inválido."
-    )
+    raise TipoRetiroInvalidoError()
 
 
 def calcular_liquidacion(
-    tipo_retiro: str,
-    salario: float,
-    fecha_ingreso: datetime,
-    fecha_retiro: datetime,
-    vacaciones_disfrutadas: int,
+    datos: DatosLiquidacion,
 ) -> float:
     """Calcula el valor total de la liquidación laboral."""
 
     dias_trabajados = calcular_dias_trabajados(
-        fecha_ingreso,
-        fecha_retiro,
+        datos.fecha_ingreso,
+        datos.fecha_retiro,
     )
 
     salario_restante = calcular_salario_restante(
-        salario,
-        fecha_retiro,
+        datos.salario,
+        datos.fecha_retiro,
     )
 
     prima = calcular_prima(
-        salario,
+        datos.salario,
         dias_trabajados,
     )
 
     cesantias = calcular_cesantias(
-        salario,
+        datos.salario,
         dias_trabajados,
     )
 
@@ -285,42 +299,39 @@ def calcular_liquidacion(
     )
 
     vacaciones = calcular_vacaciones(
-        salario,
+        datos.salario,
         dias_trabajados,
-        vacaciones_disfrutadas,
+        datos.vacaciones_disfrutadas,
     )
 
     indemnizacion = calcular_indemnizacion_por_tipo_retiro(
-        tipo_retiro,
-        salario,
+        datos.tipo_retiro,
+        datos.salario,
         dias_trabajados,
     )
 
-    return sumar_conceptos_liquidacion(
-        salario_restante,
-        prima,
-        cesantias,
-        intereses,
-        vacaciones,
-        indemnizacion,
+    conceptos = ConceptosLiquidacion(
+        salario_restante=salario_restante,
+        prima=prima,
+        cesantias=cesantias,
+        intereses=intereses,
+        vacaciones=vacaciones,
+        indemnizacion=indemnizacion,
     )
+
+    return sumar_conceptos_liquidacion(conceptos)
 
 
 def sumar_conceptos_liquidacion(
-    salario_restante: float,
-    prima: float,
-    cesantias: float,
-    intereses: float,
-    vacaciones: float,
-    indemnizacion: float,
+    conceptos: ConceptosLiquidacion,
 ) -> float:
-    """Suma todos los conceptos que componen la liquidación."""
+    """Suma todos los conceptos de la liquidación."""
 
     return (
-        salario_restante
-        + prima
-        + cesantias
-        + intereses
-        + vacaciones
-        + indemnizacion
+        conceptos.salario_restante
+        + conceptos.prima
+        + conceptos.cesantias
+        + conceptos.intereses
+        + conceptos.vacaciones
+        + conceptos.indemnizacion
     )
