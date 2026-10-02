@@ -1,5 +1,14 @@
 # Proyecto de Liquidación Definitiva
 
+## 👥 Integrantes
+
+- José Manuel Diaz
+- Yeisner David Giraldo
+
+## 🔗 Repositorio del equipo
+
+https://github.com/Jose-Dv/liquidacion-definitiva
+
 ## 📖 Descripción
 
 Este proyecto consiste en el desarrollo de una calculadora que permite calcular la **liquidación definitiva de un empleado** de acuerdo con el motivo de finalización del contrato.
@@ -22,7 +31,7 @@ liquidacion-definitiva/
 │
 ├── src/
 │   ├── controller/
-│   │   └── Componentes de control de la aplicación
+│   │   └── __init__.py
 │   │
 │   ├── model/
 │   │   ├── __init__.py
@@ -30,6 +39,9 @@ liquidacion-definitiva/
 │   │   └── logica_liquidacion.py
 │   │
 │   └── view/
+│       ├── gui/
+│       │   └── liquidacion_gui.py
+│       ├── __init__.py
 │       └── main.py
 │
 ├── tests/
@@ -37,6 +49,8 @@ liquidacion-definitiva/
 │   └── test_liquidacion.py
 │
 ├── .gitignore
+├── main.py
+├── requirements.txt
 ├── README.md
 └── Liquidacion definitiva.xlsx
 ```
@@ -51,6 +65,9 @@ liquidacion-definitiva/
 | `src/controller/`                 | Contiene los componentes destinados a coordinar el flujo entre la interfaz y la lógica de negocio.           |
 | `tests/test_liquidacion.py`       | Pruebas unitarias utilizando `unittest` para validar los cálculos, validaciones y manejo de errores.         |
 | `Liquidacion definitiva.xlsx`     | Tablero de casos de prueba utilizado como apoyo para verificar manualmente los resultados de la liquidación. |
+| `src/view/gui/liquidacion_gui.py` | Interfaz gráfica desarrollada con Kivy. Captura los datos, muestra el desglose y presenta mensajes amigables. |
+| `main.py`                         | Punto de entrada ubicado en la raíz para ejecutar la interfaz gráfica. |
+| `requirements.txt`                | Dependencias necesarias para ejecutar la aplicación en otro computador. |
 
 ---
 
@@ -84,7 +101,11 @@ Las excepciones se mantienen separadas de la lógica de negocio para mejorar la 
 
 ### View
 
-`main.py` contiene la interfaz de consola y se encarga de interactuar con el usuario.
+`src/view/main.py` contiene la interfaz de consola.
+
+`src/view/gui/liquidacion_gui.py` contiene la interfaz gráfica desarrollada con Kivy.
+
+Ambas interfaces utilizan las funciones de `src/model/logica_liquidacion.py`, por lo que comparten la misma lógica de negocio y no duplican las fórmulas.
 
 ### Controller
 
@@ -96,33 +117,108 @@ La carpeta `tests` contiene las pruebas unitarias que permiten verificar el comp
 
 ---
 
-# ▶️ Cómo ejecutar
+# ▶️ Instalación y ejecución
 
-## Calcular una liquidación por consola
+## Requisitos
 
-Desde la carpeta raíz del proyecto ejecutar:
+Para ejecutar el proyecto se necesita:
+
+- Python 3 instalado.
+- Git, si se desea clonar el repositorio.
+- Las dependencias incluidas en `requirements.txt`.
+
+## Clonar el repositorio
 
 ```bash
-python src/view/main.py
+git clone https://github.com/Jose-Dv/liquidacion-definitiva.git
+cd liquidacion-definitiva
 ```
 
-La aplicación solicitará los datos necesarios y mostrará el resultado de la liquidación.
+Si el repositorio ya está descargado, este paso no es necesario.
+
+## Instalar las dependencias
+
+En Windows:
+
+```bash
+py -m pip install -r requirements.txt
+```
+
+En Linux o macOS:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+## Ejecutar la interfaz gráfica
+
+Desde la carpeta raíz del proyecto:
+
+```bash
+py main.py
+```
+
+La aplicación abrirá una interfaz gráfica desarrollada con Kivy. Esta permite ingresar los datos del empleado, calcular la liquidación, consultar el desglose de los conceptos y limpiar el formulario.
+
+## Ejecutar la interfaz de consola
+
+Desde la carpeta raíz del proyecto:
+
+```bash
+py src/view/main.py
+```
+
+La consola solicitará el tipo de retiro, salario, fechas y vacaciones disfrutadas.
 
 ## Ejecutar las pruebas unitarias
 
-Desde la carpeta raíz del proyecto ejecutar:
+Desde la carpeta raíz del proyecto:
 
 ```bash
-python -m unittest tests.test_liquidacion -v
+py -m unittest tests.test_liquidacion -v
 ```
 
-También se pueden ejecutar todas las pruebas mediante descubrimiento automático:
+También se pueden ejecutar mediante descubrimiento automático:
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py" -v
+py -m unittest discover -s tests -p "test_*.py" -v
 ```
 
----
+El proyecto contiene 24 pruebas unitarias.
+
+## 🖥️ Generar el ejecutable para Windows
+
+### Prerrequisito
+
+Instalar PyInstaller:
+
+```powershell
+py -m pip install -U pyinstaller
+```
+
+### Compilación
+
+Desde la carpeta raíz del proyecto, donde se encuentra `main.py`, ejecutar:
+
+```powershell
+pyinstaller -F --paths=src main.py
+```
+
+El ejecutable se genera en:
+
+```text
+dist/main.exe
+```
+
+Para ejecutarlo desde PowerShell:
+
+```powershell
+.\dist\main.exe
+```
+
+También se puede abrir haciendo doble clic sobre `main.exe`.
+
+Las carpetas `build` y `dist` no se almacenan en el repositorio porque contienen archivos generados durante la compilación.
 
 ## 📥 Entradas
 
@@ -327,3 +423,99 @@ El proyecto busca aplicar principios de **Clean Code** y buenas prácticas de de
 Proyecto desarrollado como parte de las prácticas de programación, con evolución progresiva de la estructura, arquitectura, pruebas unitarias y calidad del código.
 
 La versión actual incorpora una separación de responsabilidades entre la lógica de negocio, las excepciones, la interfaz de consola y las pruebas unitarias.
+
+## 📱 Aplicación Android
+
+La aplicación fue compilada con Buildozer desde Ubuntu 22.04
+mediante WSL, instalada y ejecutada en un dispositivo Android.
+
+### Descarga de ejecutables
+
+El APK de Android y el ejecutable de Windows se publican en:
+
+https://github.com/Jose-Dv/liquidacion-definitiva/releases
+
+### Instalación en Android
+
+1. Descargar `liquidaciondefinitiva-0.1-arm64-v8a-debug.apk`.
+2. Transferir el archivo al dispositivo Android.
+3. Abrir el APK y, si se solicita, permitir la instalación desde
+   la aplicación utilizada para abrirlo.
+4. Completar la instalación.
+5. Abrir **Liquidacion Definitiva**.
+
+El APK es una compilación de prueba (`debug`) para dispositivos
+con arquitectura ARM64 y Android 7.0 o posterior.
+
+### Entorno de compilación utilizado
+
+| Componente | Configuración |
+|---|---|
+| Sistema de compilación | Ubuntu 22.04 mediante WSL |
+| Buildozer | 1.6.0 |
+| Java | OpenJDK 17 |
+| Python para Android | 3.13.5 |
+| Hostpython | 3.13.5 |
+| Interfaz gráfica | Kivy |
+| Arquitectura | arm64-v8a |
+| API mínima de Android | 24 |
+| API objetivo de Android | 33 |
+
+La configuración se encuentra en `buildozer.spec`.
+
+### Ajustes necesarios durante la compilación
+
+Se modificó el archivo `pythonforandroid/build.py` de la copia
+local de python-for-android utilizada por Buildozer:
+
+1. Se limitó la actualización interna de pip a versiones menores
+   de 26. Este cambio por sí solo no resolvió el error.
+2. Se indicó explícitamente la plataforma Android en el comando
+   que instala los paquetes de `requirements.txt` en el directorio
+   de destino, agregando estas opciones:
+
+```text
+--platform android_24_arm64_v8a --python-version 3.13 --implementation cp --only-binary=:all:
+```
+
+Después de este ajuste, la compilación terminó correctamente.
+
+Los archivos que documentan el entorno son:
+
+- `buildozer.spec`: configuración de la aplicación Android.
+- `doc/android/p4a-build.patch`: cambios aplicados a python-for-android.
+- `doc/android/p4a-commit.txt`: revisión exacta de python-for-android utilizada.
+
+Estos ajustes corresponden a la configuración indicada y deben
+revisarse si se cambia la versión de Python o la arquitectura.
+
+### Generación del APK
+
+La compilación se realiza desde Ubuntu, con el proyecto ubicado
+en el sistema de archivos de Linux, por ejemplo:
+
+```bash
+cd ~/liquidacion-definitiva
+```
+
+Para reproducir el entorno es necesario instalar las herramientas
+de compilación, utilizar la revisión de python-for-android
+registrada en `doc/android/p4a-commit.txt` y aplicar el parche
+`doc/android/p4a-build.patch` desde la raíz de esa copia de
+python-for-android.
+
+Con el entorno preparado, ejecutar:
+
+```bash
+buildozer -v android debug
+```
+
+El archivo generado queda en:
+
+```text
+bin/liquidaciondefinitiva-0.1-arm64-v8a-debug.apk
+```
+
+### Evidencia de ejecución en Android
+
+![Aplicación funcionando en Android](doc/android/captura-android.jpeg)
