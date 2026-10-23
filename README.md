@@ -17,6 +17,8 @@ El programa automatiza el cálculo de las prestaciones sociales, la indemnizaci�
 
 El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación a partir de la información suministrada.
 
+Las liquidaciones calculadas se **guardan en una base de datos PostgreSQL** (alojada en Render) usando un **ORM (SQLAlchemy)**, y se pueden **buscar** después por documento del empleado o por id.
+
 ---
 
 ## 🗂️ Estructura del proyecto
@@ -29,29 +31,35 @@ liquidacion-definitiva/
 ├── doc/
 │   └── Documentación del proyecto
 │
+├── sql/
+│   └── schema.sql                  # SQL para crear/borrar las tablas
+│
 ├── src/
 │   ├── controller/
-│   │   └── __init__.py
+│   │   └── Componentes de control de la aplicación
 │   │
 │   ├── model/
 │   │   ├── __init__.py
+│   │   ├── base_datos.py
+│   │   ├── entidades.py
 │   │   ├── excepciones.py
 │   │   └── logica_liquidacion.py
 │   │
 │   └── view/
-│       ├── gui/
-│       │   └── liquidacion_gui.py
-│       ├── __init__.py
 │       └── main.py
 │
 ├── tests/
 │   ├── __init__.py
+│   ├── test_base_datos.py
 │   └── test_liquidacion.py
 │
+├── .env                            # TUS datos (ignorado por git)
+├── .env.example                    # modelo del .env (sin datos reales)
 ├── .gitignore
 ├── main.py
 ├── requirements.txt
 ├── README.md
+├── requirements.txt
 └── Liquidacion definitiva.xlsx
 ```
 
@@ -62,7 +70,13 @@ liquidacion-definitiva/
 | `src/model/logica_liquidacion.py` | Contiene las constantes y funciones que implementan la lógica de negocio y los cálculos de la liquidación.   |
 | `src/model/excepciones.py`        | Contiene las excepciones personalizadas utilizadas para controlar datos inválidos.                           |
 | `src/view/main.py`                | Interfaz de consola: solicita los datos al usuario, invoca la lógica y muestra el resultado o los errores.   |
-| `src/controller/`                 | Contiene los componentes destinados a coordinar el flujo entre la interfaz y la lógica de negocio.           |
+| `src/model/entidades.py`          | Clases del Model mapeadas por el ORM a las tablas `empleados` y `liquidaciones`.                             |
+| `src/model/base_datos.py`         | Construye la conexión a PostgreSQL a partir de `secret_config.py` y define la base declarativa del ORM.      |
+| `src/controller/liquidacion_controller.py` | Crear/borrar tablas, insertar y buscar liquidaciones en la base de datos.                           |
+| `sql/schema.sql`                  | SQL equivalente al que genera el ORM (DROP/CREATE TABLE) con ejemplos de `INSERT INTO` y `SELECT`.           |
+| `src/secret_config_sample.py`     | Plantilla con instrucciones para crear `secret_config.py` (que NO se sube a git).                            |
+| `.env.example`                    | Modelo del archivo `.env` con los datos de conexión (el `.env` real NO se sube a git).                       |
+| `src/verificar_conexion.py`       | Script que comprueba la configuración y la conexión a PostgreSQL.                                            |
 | `tests/test_liquidacion.py`       | Pruebas unitarias utilizando `unittest` para validar los cálculos, validaciones y manejo de errores.         |
 | `Liquidacion definitiva.xlsx`     | Tablero de casos de prueba utilizado como apoyo para verificar manualmente los resultados de la liquidación. |
 | `src/view/gui/liquidacion_gui.py` | Interfaz gráfica desarrollada con Kivy. Captura los datos, muestra el desglose y presenta mensajes amigables. |
@@ -90,12 +104,20 @@ Contiene la lógica de negocio de la aplicación.
 * Calcular indemnización.
 * Calcular la liquidación total.
 
+`entidades.py` contiene las clases del ORM:
+
+* `Empleado` → tabla `empleados` (`id`, `documento` único, `nombre`).
+* `Liquidacion` → tabla `liquidaciones` (datos de entrada, cada concepto calculado, `total` y fecha de creación). Cada liquidación pertenece a un empleado y un empleado puede tener varias.
+
 `excepciones.py` contiene las excepciones personalizadas:
 
 * `FechaInvalidaError`
 * `SalarioInvalidoError`
 * `TipoRetiroInvalidoError`
 * `VacacionesInvalidasError`
+* `DocumentoInvalidoError`, `NombreInvalidoError`
+* `EmpleadoNoEncontradoError`, `LiquidacionNoEncontradaError`
+* `ConfiguracionBDError`, `ErrorConexionBDError`, `TablasNoCreadasError`
 
 Las excepciones se mantienen separadas de la lógica de negocio para mejorar la organización y el mantenimiento del código.
 
@@ -109,11 +131,110 @@ Ambas interfaces utilizan las funciones de `src/model/logica_liquidacion.py`, po
 
 ### Controller
 
-La carpeta `controller` está destinada a los componentes encargados de coordinar el flujo entre la interfaz y la lógica de negocio.
+`LiquidacionController` coordina la lógica de negocio con la base de datos:
+
+* `crear_tablas()` y `borrar_tablas()`.
+* `registrar_liquidacion()` → calcula y guarda (`INSERT INTO`).
+* `buscar_por_documento()` y `buscar_por_id()` → consultas (`SELECT`).
+* `listar_liquidaciones()`, `buscar_por_tipo_retiro()` y `listar_empleados()` → listados y filtros.
+* `obtener_total_liquidado()` → suma de las liquidaciones de un empleado.
+* `actualizar_nombre_empleado()` → `UPDATE`.
+* `eliminar_liquidacion()` y `eliminar_empleado()` → `DELETE`.
+
+Convierte los errores técnicos de la base de datos (sin conexión, tablas inexistentes) en excepciones propias con mensajes claros.
 
 ### Tests
 
 La carpeta `tests` contiene las pruebas unitarias que permiten verificar el comportamiento esperado del sistema.
+
+---
+
+# 🗄️ Base de datos (PostgreSQL en Render)
+
+## 1. Instalar dependencias
+
+Desde la carpeta raíz del proyecto:
+
+```bash
+pip install -r requirements.txt
+```
+
+## 2. Crear la base de datos en Render
+
+1. En [render.com](https://render.com) crea una instancia: **New → PostgreSQL** (por ejemplo con el nombre `liquidacion`).
+2. Cuando esté disponible (*Available*), entra a la instancia, sección **Connections**, y copia: **Hostname (External)**, **Port**, **Database**, **Username** y **Password**.
+3. Crea una segunda base **solo para las pruebas** (su nombre debe terminar en `_test`). Con `psql` y el *External Database URL* de Render:
+
+```bash
+psql "<External Database URL>" -c "CREATE DATABASE liquidacion_test;"
+```
+
+> Las pruebas borran y crean tablas, por eso **nunca** deben apuntar a la base con datos reales.
+>
+> Si tu usuario de Render no tiene permiso para ejecutar `CREATE DATABASE`, crea una **segunda instancia** de PostgreSQL en Render y usa sus datos para `DB_NAME_TEST`.
+
+## 3. Configurar la conexión
+
+Los datos de conexión **no se suben a git**. El programa los busca en este orden:
+
+1. **Archivo `.env`** en la raíz del proyecto (recomendado).
+2. **Archivo `src/secret_config.py`** (alternativa).
+
+### Opción A: archivo `.env`
+
+Copia el modelo `.env.example` como `.env` y completa tus datos de Render:
+
+```bash
+# Windows
+copy .env.example .env
+
+# Linux / Mac
+cp .env.example .env
+```
+
+| Variable        | Qué poner                                                                                       |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| `DB_USER`       | Username de Render.                                                                             |
+| `DB_PASSWORD`   | Password de Render.                                                                             |
+| `DB_HOST`       | Hostname **externo** (termina en `.<region>-postgres.render.com`). El interno solo sirve dentro de Render. |
+| `DB_PORT`       | `5432`.                                                                                         |
+| `DB_NAME`       | Nombre de la base **exactamente** como aparece en Render (mayúsculas, guiones y guiones bajos). |
+| `DB_NAME_TEST`  | Base solo para pruebas; debe terminar en `_test`.                                               |
+| `DB_SSLMODE`    | `require` en Render (por defecto). `prefer` para un PostgreSQL local sin SSL.                   |
+
+### Opción B: archivo `src/secret_config.py`
+
+Copia la plantilla `src/secret_config_sample.py` (sin datos reales) y reemplaza los valores; sigue las instrucciones dentro del archivo:
+
+```bash
+# Windows
+copy src\secret_config_sample.py src\secret_config.py
+
+# Linux / Mac
+cp src/secret_config_sample.py src/secret_config.py
+```
+
+### Verificar que la conexión quedó bien
+
+```bash
+python src/verificar_conexion.py
+```
+
+Muestra de dónde se leyó la configuración (nunca imprime la contraseña), prueba la conexión a `DB_NAME` y a `DB_NAME_TEST` y explica qué corregir si algo falla. Con `--crear-bd-test` intenta crear la base de pruebas si no existe.
+
+## 4. Crear las tablas
+
+Hay dos formas equivalentes:
+
+* **Desde el programa**: ejecutarlo (paso siguiente) y elegir la opción **4. Crear las tablas**.
+* **Con SQL**: `psql "<External Database URL>" -f sql/schema.sql` (borra y vuelve a crear las tablas).
+
+Estructura creada:
+
+| Tabla           | Columnas principales                                                                                                          |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `empleados`     | `id` (PK), `documento` (único), `nombre`                                                                                      |
+| `liquidaciones` | `id` (PK), `empleado_id` (FK → `empleados`), datos de entrada, conceptos calculados, `total`, `creada_en`                     |
 
 ---
 
