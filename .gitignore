@@ -70,3 +70,4 @@ Thumbs.db
 build/
 dist/
 *.egg-info/
+*.spec

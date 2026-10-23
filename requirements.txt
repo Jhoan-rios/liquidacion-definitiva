@@ -1,3 +1,4 @@
 SQLAlchemy>=2.0
 psycopg2-binary>=2.9
 python-dotenv>=1.0
+kivy[base]==2.3.1
