@@ -270,13 +270,24 @@ def calcular_indemnizacion_por_tipo_retiro(
     raise TipoRetiroInvalidoError()
 
 
-def calcular_detalle_liquidacion(
+def calcular_conceptos_liquidacion(
     datos: DatosLiquidacion,
 ) -> ConceptosLiquidacion:
-    """Calcula y devuelve cada concepto de la liquidación."""
+    """Calcula cada uno de los conceptos de la liquidación."""
+
     dias_trabajados = calcular_dias_trabajados(
         datos.fecha_ingreso,
         datos.fecha_retiro,
+    )
+
+    salario_restante = calcular_salario_restante(
+        datos.salario,
+        datos.fecha_retiro,
+    )
+
+    prima = calcular_prima(
+        datos.salario,
+        dias_trabajados,
     )
 
     cesantias = calcular_cesantias(
@@ -284,36 +295,40 @@ def calcular_detalle_liquidacion(
         dias_trabajados,
     )
 
+    intereses = calcular_intereses(
+        cesantias,
+        dias_trabajados,
+    )
+
+    vacaciones = calcular_vacaciones(
+        datos.salario,
+        dias_trabajados,
+        datos.vacaciones_disfrutadas,
+    )
+
+    indemnizacion = calcular_indemnizacion_por_tipo_retiro(
+        datos.tipo_retiro,
+        datos.salario,
+        dias_trabajados,
+    )
+
     return ConceptosLiquidacion(
-        salario_restante=calcular_salario_restante(
-            datos.salario,
-            datos.fecha_retiro,
-        ),
-        prima=calcular_prima(
-            datos.salario,
-            dias_trabajados,
-        ),
+        salario_restante=salario_restante,
+        prima=prima,
         cesantias=cesantias,
-        intereses=calcular_intereses(
-            cesantias,
-            dias_trabajados,
-        ),
-        vacaciones=calcular_vacaciones(
-            datos.salario,
-            dias_trabajados,
-            datos.vacaciones_disfrutadas,
-        ),
-        indemnizacion=calcular_indemnizacion_por_tipo_retiro(
-            datos.tipo_retiro,
-            datos.salario,
-            dias_trabajados,
-        ),
+        intereses=intereses,
+        vacaciones=vacaciones,
+        indemnizacion=indemnizacion,
     )
 
 
-def calcular_liquidacion(datos: DatosLiquidacion) -> float:
-    """Devuelve el valor total de la liquidación."""
-    conceptos = calcular_detalle_liquidacion(datos)
+def calcular_liquidacion(
+    datos: DatosLiquidacion,
+) -> float:
+    """Calcula el valor total de la liquidación laboral."""
+
+    conceptos = calcular_conceptos_liquidacion(datos)
+
     return sumar_conceptos_liquidacion(conceptos)
 
 
