@@ -37,7 +37,10 @@ test-results/
 
 .env
 .env.*
-
+.venv/
+venv/
+env/
+ENV/
 # ==========================
 # Archivos del sistema
 # ==========================
