@@ -1,0 +1,823 @@
+/* ==========================================================
+   Calculadora de liquidación definitiva de empleados
+   Índice: 1 Colores · 2 Base y lienzo · 3 Barra · 4 Botones
+           5 Inicio · 6 Ejemplo de uso · 7 Formularios
+           8 Resultados · 9 Tablas · 10 Avisos · 11 Móvil
+   ========================================================== */
+
+/* 1. Colores y fuentes */
+:root {
+    --bosque: #124B40;
+    --esmeralda: #207B62;
+    --lima: #B8D977;
+    --champagne: #E8E2C9;
+    --marfil: #FAF8EF;
+    --niebla: #EAF1E9;
+    --carbon: #25332D;
+    --blanco: #FFFFFF;
+    --error: #A63D2F;
+    --error-fondo: #FBEAE6;
+    --suave: color-mix(in srgb, var(--carbon) 60%, var(--marfil));
+    --verde-suave: color-mix(in srgb, var(--esmeralda) 55%, var(--marfil));
+
+    --fuente-titulos: "Manrope", system-ui, sans-serif;
+    --fuente-texto: "DM Sans", system-ui, sans-serif;
+    --radio: 22px;
+    --sombra: 0 10px 30px rgba(18, 75, 64, 0.08);
+}
+
+/* 2. Base y lienzo */
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 1.25rem;
+    background: var(--champagne);
+    color: var(--carbon);
+    font-family: var(--fuente-texto);
+    line-height: 1.6;
+}
+
+.lienzo {
+    max-width: 1440px;
+    margin: 0 auto;
+    border-radius: 28px;
+    overflow: hidden;
+    background: repeating-linear-gradient(
+        135deg, var(--marfil) 0 7px, #EFEBD8 7px 8px
+    );
+}
+
+.columna {
+    width: min(1120px, 100%);
+    min-height: calc(100vh - 2.5rem);
+    margin-inline: auto;
+    padding: 0 2rem 1rem;
+    background: var(--marfil);
+}
+
+h1, h2, h3 {
+    margin: 0 0 0.5rem;
+    color: var(--bosque);
+    font-family: var(--fuente-titulos);
+    line-height: 1.12;
+}
+
+a { color: var(--esmeralda); }
+
+.icono {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* 3. Barra de navegación */
+.barra__contenido {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.4rem 0;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    max-width: 230px;
+    color: var(--bosque);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.25;
+}
+
+.marca__logo {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--bosque);
+    color: var(--lima);
+}
+
+.menu {
+    display: flex;
+    gap: 1.75rem;
+    margin-right: auto;
+}
+
+.menu a {
+    color: var(--suave);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.menu a:hover { color: var(--bosque); }
+.menu a.activo { color: var(--bosque); font-weight: 700; }
+
+/* 4. Botones */
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.7rem;
+    border: 1.5px solid transparent;
+    border-radius: 999px;
+    font-family: var(--fuente-texto);
+    font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+}
+
+.boton:hover { transform: translateY(-2px); }
+.boton--principal { background: var(--bosque); color: var(--blanco); }
+.boton--principal:hover { background: var(--esmeralda); }
+.boton--secundario {
+    background: var(--blanco);
+    color: var(--suave);
+    border-color: var(--champagne);
+}
+.boton--peligro {
+    background: var(--blanco);
+    color: var(--error);
+    border-color: var(--error);
+}
+.boton--chico { padding: 0.6rem 1.3rem; font-size: 0.95rem; }
+
+/* 5. Inicio */
+.hero {
+    text-align: center;
+    padding: 2.5rem 0 1.5rem;
+}
+
+.etiqueta-pildora {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--champagne);
+    border-radius: 999px;
+    background: var(--blanco);
+    color: var(--bosque);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.etiqueta-pildora .icono {
+    width: 1rem;
+    height: 1rem;
+    color: var(--esmeralda);
+}
+
+.hero h1 {
+    max-width: 880px;
+    margin-inline: auto;
+    font-size: clamp(2.4rem, 6vw, 4.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.hero h1 span { color: var(--verde-suave); }
+
+.hero p {
+    max-width: 640px;
+    margin: 1.5rem auto 2rem;
+    color: var(--suave);
+    font-size: 1.15rem;
+}
+
+.hero p strong { color: var(--bosque); font-weight: 500; }
+
+.hero__botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    justify-content: center;
+}
+
+.conceptos-franja {
+    padding: 2.5rem 0 2rem;
+    text-align: center;
+    color: var(--suave);
+    font-size: 1.05rem;
+}
+
+.conceptos-franja ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--fuente-titulos);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    font-size: 0.95rem;
+    color: color-mix(in srgb, var(--carbon) 45%, var(--marfil));
+}
+
+/* 6. Ejemplo de uso */
+.cuadro-ejemplo {
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 28px;
+    background: var(--niebla);
+    border: 1.5px solid var(--champagne);
+    box-shadow: var(--sombra);
+}
+
+.ejemplo-titulo { text-align: center; margin-bottom: 1.5rem; }
+
+.ejemplo-titulo h2 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.ejemplo-titulo p { margin: 0; color: var(--suave); }
+
+.ejemplo {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.ejemplo__col { display: flex; flex-direction: column; }
+
+.ejemplo__col > .tarjeta,
+.ejemplo__col > .resumen { flex: 1; }
+
+.ejemplo .tarjeta { display: flex; margin-bottom: 0; }
+
+.etiqueta-id {
+    display: inline-block;
+    padding: 0.1rem 0.8rem;
+    border-radius: 999px;
+    background: var(--lima);
+    color: var(--bosque);
+    font-weight: 700;
+}
+
+.ejemplo__paso {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: var(--esmeralda);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ejemplo .datos {
+    flex: 1;
+    grid-template-columns: 1fr;
+    align-content: space-between;
+    gap: 0.75rem;
+}
+
+.ejemplo .resumen {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    margin-bottom: 0;
+}
+
+.ejemplo .conceptos { grid-auto-rows: 1fr; }
+
+/* 7. Formularios y tarjetas */
+.encabezado-pagina { padding: 1.5rem 0; }
+
+.encabezado-pagina h1 {
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.encabezado-pagina p { margin: 0; color: var(--suave); }
+
+.tarjeta {
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--radio);
+    background: var(--blanco);
+    border: 1px solid var(--champagne);
+    box-shadow: var(--sombra);
+}
+
+.formulario {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.1rem 1.25rem;
+}
+
+.formulario--en-linea {
+    grid-template-columns: 200px 1fr auto;
+    align-items: end;
+}
+
+.campo { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.campo--ancha,
+.formulario__acciones { grid-column: 1 / -1; }
+
+.campo label {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--bosque);
+}
+
+.campo input,
+.campo select {
+    padding: 0.8rem 1rem;
+    border: 1.5px solid var(--champagne);
+    border-radius: 14px;
+    background: var(--marfil);
+    color: var(--carbon);
+    font: inherit;
+}
+
+.campo input:focus,
+.campo select:focus {
+    outline: 3px solid rgba(32, 123, 98, 0.25);
+    border-color: var(--esmeralda);
+}
+
+/* 8. Resultados */
+.resumen {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.resumen__total {
+    padding: 2rem;
+    border-radius: var(--radio);
+    color: var(--champagne);
+    background-color: var(--bosque);
+    background-image: radial-gradient(
+        rgba(184, 217, 119, 0.22) 1px, transparent 1px
+    );
+    background-size: 10px 10px;
+}
+
+.resumen__total .etiqueta {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.resumen__total .cifra {
+    display: block;
+    margin: 0.4rem 0 1rem;
+    color: var(--lima);
+    font-family: var(--fuente-titulos);
+    font-weight: 800;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+}
+
+.resumen__total p { margin: 0 0 0.75rem; }
+
+.chip {
+    display: inline-block;
+    padding: 0.25rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(184, 217, 119, 0.18);
+    color: var(--lima);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.conceptos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.concepto {
+    padding: 1.1rem;
+    border-radius: 16px;
+    background: var(--blanco);
+    border: 1px solid var(--champagne);
+}
+
+.concepto span {
+    display: block;
+    color: var(--suave);
+    font-size: 0.8rem;
+}
+
+.concepto strong {
+    font-family: var(--fuente-titulos);
+    color: var(--bosque);
+    font-size: 1.15rem;
+}
+
+.datos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem 1.5rem;
+    margin: 0;
+}
+
+.datos dt {
+    font-size: 0.8rem;
+    color: var(--esmeralda);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.datos dd { margin: 0; font-weight: 500; }
+
+/* 9. Tablas */
+.tabla-scroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+    text-align: left;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--esmeralda);
+}
+
+th, td {
+    padding: 0.8rem 0.75rem;
+    border-bottom: 1px solid var(--champagne);
+}
+
+td.total {
+    font-family: var(--fuente-titulos);
+    font-weight: 800;
+    color: var(--bosque);
+}
+
+/* 10. Avisos */
+.aviso {
+    padding: 1rem 1.25rem;
+    margin: 0 0 1rem;
+    border-radius: 14px;
+    font-weight: 500;
+}
+
+.aviso--error {
+    background: var(--error-fondo);
+    color: var(--error);
+    border: 1px solid var(--error);
+}
+
+.aviso--exito {
+    background: rgba(184, 217, 119, 0.3);
+    color: var(--bosque);
+    border: 1px solid var(--lima);
+}
+
+.zona-peligro {
+    border-color: var(--error);
+    background: var(--error-fondo);
+}
+
+.pie {
+    padding: 1.5rem 0 0.5rem;
+    color: var(--suave);
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* 11. Móvil */
+@media (max-width: 760px) {
+    body { padding: 0.5rem; }
+    .columna { padding: 0 1rem 1rem; }
+    .cuadro-ejemplo { padding: 1.25rem; }
+    .barra__contenido { flex-wrap: wrap; gap: 0.75rem 1rem; }
+    .menu {
+        order: 3;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.25rem;
+    }
+    .formulario,
+    .formulario--en-linea,
+    .resumen,
+    .ejemplo { grid-template-columns: 1fr; }
+    .conceptos { grid-template-columns: 1fr 1fr; }
+}
+
+/* ==========================================================
+   12. Componentes complementarios de la página de inicio
+   ========================================================== */
+
+/* Contenido principal del hero */
+.hero__contenido {
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+/* Etiqueta superior */
+.etiqueta,
+.etiqueta-pildora {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--champagne);
+    border-radius: 999px;
+    background: var(--blanco);
+    color: var(--bosque);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+/* Secciones de la página */
+.seccion {
+    padding: 1.5rem 0;
+}
+
+/* Textos secundarios */
+.texto-secundario {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--esmeralda);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Tarjetas de resumen */
+.resumen-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.tarjeta-resumen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    border: 1px solid var(--champagne);
+    border-radius: var(--radio);
+    background: var(--blanco);
+    box-shadow: var(--sombra);
+}
+
+.tarjeta-resumen p {
+    margin: 0;
+    color: var(--suave);
+}
+
+.tarjeta-resumen strong {
+    color: var(--bosque);
+    font-family: var(--fuente-titulos);
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.tarjeta-resumen__icono {
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 14px;
+    background: var(--niebla);
+    color: var(--esmeralda);
+}
+
+.tarjeta-resumen__icono .icono {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+/* Contenedor de tablas */
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--champagne);
+    border-radius: var(--radio);
+    background: var(--blanco);
+}
+
+.tabla-contenedor table {
+    min-width: 600px;
+}
+
+/* Estado sin registros */
+.estado-vacio {
+    padding: 2.5rem 1.5rem;
+    border: 1px dashed var(--champagne);
+    border-radius: var(--radio);
+    background: var(--blanco);
+    text-align: center;
+}
+
+.estado-vacio p {
+    margin: 0.5rem 0 1.5rem;
+    color: var(--suave);
+}
+
+/* Adaptación a dispositivos móviles */
+@media (max-width: 760px) {
+    .resumen-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero__contenido {
+        padding-inline: 0.5rem;
+    }
+
+    .tarjeta-resumen {
+        padding: 1.25rem;
+    }
+
+    .estado-vacio {
+        padding: 1.5rem 1rem;
+    }
+}
+
+/* Organización del formulario de nueva liquidación */
+.formulario:not(.formulario--en-linea) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.formulario__seccion {
+    grid-column: 1 / -1;
+    padding: 1.75rem;
+    border: 1px solid var(--champagne);
+    border-radius: var(--radio);
+    background: var(--blanco);
+    box-shadow: var(--sombra);
+}
+
+.formulario__seccion h2 {
+    margin-bottom: 0.4rem;
+}
+
+.formulario__seccion > p {
+    margin: 0 0 1rem;
+    color: var(--suave);
+}
+
+.formulario__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem 1.25rem;
+}
+
+.formulario__acciones {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+@media (max-width: 760px) {
+    .formulario__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .formulario__acciones {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .formulario__acciones .boton {
+        width: 100%;
+    }
+}
+
+/* Resultado de una liquidación */
+.resultado__resumen {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(0, 1.35fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.resultado__total {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 310px;
+    padding: 2rem;
+    border-radius: var(--radio);
+    color: var(--blanco);
+    background-color: var(--bosque);
+    background-image: radial-gradient(
+        rgba(190, 215, 105, 0.24) 1px,
+        transparent 1px
+    );
+    background-size: 12px 12px;
+}
+
+.resultado__etiqueta {
+    font-weight: 700;
+    letter-spacing: 0.12em;
+}
+
+.resultado__total strong {
+    color: var(--verde-suave);
+    font-family: var(--fuente-titulos);
+    font-size: clamp(1.6rem, 4vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.resultado__total p {
+    margin: 0;
+    color: var(--blanco);
+}
+
+.resultado__retiro {
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    color: var(--verde-suave);
+    background: rgba(190, 215, 105, 0.18);
+    font-weight: 700;
+}
+
+.resultado__conceptos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.resultado__concepto {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 1.1rem;
+    border: 1px solid var(--champagne);
+    border-radius: var(--radio);
+    background: var(--blanco);
+}
+
+.resultado__concepto span {
+    color: var(--suave);
+}
+
+.resultado__concepto strong {
+    color: var(--bosque);
+    font-family: var(--fuente-titulos);
+    font-size: 1.2rem;
+    overflow-wrap: anywhere;
+}
+
+.resultado__datos,
+.resultado__desglose {
+    margin-bottom: 1.25rem;
+}
+
+.resultado__datos .datos {
+    margin-top: 1rem;
+}
+
+.resultado__acciones {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    .resultado__resumen {
+        grid-template-columns: 1fr;
+    }
+
+    .resultado__total {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 600px) {
+    .resultado__conceptos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
+    }
+
+    .resultado__concepto {
+        padding: 0.9rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .resultado__conceptos {
+        grid-template-columns: 1fr;
+    }
+}
