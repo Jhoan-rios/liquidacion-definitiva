@@ -216,6 +216,14 @@ class TestInsertar(BaseDatosTestCase):
                 "  ", NOMBRE, crear_datos()
             )
 
+    def test_insertar_con_documento_con_letras_falla(self):
+        with self.assertRaises(DocumentoInvalidoError):
+            self.controlador.registrar_liquidacion(
+                "ABC123",
+                NOMBRE,
+                crear_datos(),
+            )
+
     def test_insertar_con_documento_con_simbolos_falla(self):
         with self.assertRaises(DocumentoInvalidoError):
             self.controlador.registrar_liquidacion(
