@@ -8,15 +8,13 @@ El programa automatiza el cálculo de las prestaciones sociales, la indemnizaci�
 
 El objetivo es reducir errores en los cálculos manuales y facilitar la obtención de una liquidación a partir de la información suministrada.
 
-Las liquidaciones calculadas se **guardan en una base de datos PostgreSQL** (alojada en Render) usando un **ORM (SQLAlchemy)**, y se pueden **buscar** después por documento del empleado o por id.
-
-Las liquidaciones calculadas se **guardan en una base de datos PostgreSQL** (alojada en Render) usando un **ORM (SQLAlchemy)**, y se pueden **buscar** después por documento del empleado o por id.
+Las liquidaciones se guardan en PostgreSQL mediante SQLAlchemy y pueden consultarse posteriormente por documento del empleado o por ID.
 
 ---
 
 ## 🗂️ Estructura del proyecto
 
-El proyecto está organizado mediante una separación de responsabilidades entre la lógica de negocio, la interfaz de consola y las pruebas unitarias.
+El proyecto sigue el patrón MVC: el modelo contiene las entidades y la lógica de liquidación; el controlador coordina las operaciones y registra las rutas web mediante Blueprints de Flask; las vistas ofrecen interfaces web y de consola; y `tests` contiene las pruebas unitarias.
 
 ```text
 liquidacion-definitiva/
@@ -66,27 +64,24 @@ liquidacion-definitiva/
 
 ### Responsabilidad de cada componente
 
-| Archivo / Carpeta                 | Responsabilidad                                                                                              |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `src/model/logica_liquidacion.py` | Contiene las constantes y funciones que implementan la lógica de negocio y los cálculos de la liquidación.   |
-| `src/model/excepciones.py`        | Contiene las excepciones personalizadas utilizadas para controlar datos inválidos.                           |
-| `src/view/main.py`                | Interfaz de consola: solicita los datos al usuario, invoca la lógica y muestra el resultado o los errores.   |
-| `src/model/entidades.py`          | Clases del Model mapeadas por el ORM a las tablas `empleados` y `liquidaciones`.                             |
-| `src/model/base_datos.py`         | Construye la conexión a PostgreSQL a partir de `secret_config.py` y define la base declarativa del ORM.      |
-| `src/controller/liquidacion_controller.py` | Crear/borrar tablas, insertar y buscar liquidaciones en la base de datos.                           |
-| `sql/schema.sql`                  | SQL equivalente al que genera el ORM (DROP/CREATE TABLE) con ejemplos de `INSERT INTO` y `SELECT`.           |
-| `src/secret_config_sample.py`     | Plantilla con instrucciones para crear `secret_config.py` (que NO se sube a git).                            |
-| `.env.example`                    | Modelo del archivo `.env` con los datos de conexión (el `.env` real NO se sube a git).                       |
-| `src/verificar_conexion.py`       | Script que comprueba la configuración y la conexión a PostgreSQL.                                            |
-| `src/model/entidades.py`          | Clases del Model mapeadas por el ORM a las tablas `empleados` y `liquidaciones`.                             |
-| `src/model/base_datos.py`         | Construye la conexión a PostgreSQL a partir de `secret_config.py` y define la base declarativa del ORM.      |
-| `src/controller/liquidacion_controller.py` | Crear/borrar tablas, insertar y buscar liquidaciones en la base de datos.                           |
-| `sql/schema.sql`                  | SQL equivalente al que genera el ORM (DROP/CREATE TABLE) con ejemplos de `INSERT INTO` y `SELECT`.           |
-| `src/secret_config_sample.py`     | Plantilla con instrucciones para crear `secret_config.py` (que NO se sube a git).                            |
-| `.env.example`                    | Modelo del archivo `.env` con los datos de conexión (el `.env` real NO se sube a git).                       |
-| `src/verificar_conexion.py`       | Script que comprueba la configuración y la conexión a PostgreSQL.                                            |
-| `tests/test_liquidacion.py`       | Pruebas unitarias utilizando `unittest` para validar los cálculos, validaciones y manejo de errores.         |
-| `Liquidacion definitiva.xlsx`     | Tablero de casos de prueba utilizado como apoyo para verificar manualmente los resultados de la liquidación. |
+| Archivo o carpeta | Responsabilidad |
+| --- | --- |
+| `src/model/logica_liquidacion.py` | Contiene las funciones y reglas para calcular los conceptos de la liquidación. |
+| `src/model/entidades.py` | Define las entidades `Empleado` y `Liquidacion`, que SQLAlchemy relaciona con las tablas de la base de datos. |
+| `src/model/base_datos.py` | Lee la configuración de conexión y crea el motor de conexión a PostgreSQL. |
+| `src/model/excepciones.py` | Define errores propios para informar problemas de datos, conexión y consultas. |
+| `src/controller/liquidacion_controller.py` | Coordina la lógica de liquidación con las operaciones de la base de datos. |
+| `src/controller/aplicacion.py` | Configura Flask, registra filtros de presentación y conecta la aplicación con sus rutas. |
+| `src/controller/blueprints/` | Organiza las rutas web por funcionalidad: inicio, liquidaciones, búsqueda y base de datos. |
+| `src/view/web_estilizada/app.py` | Inicia la versión web con el diseño visual de la aplicación. |
+| `src/view/web_estilizada/templates/` | Contiene las plantillas HTML que muestran las páginas de la aplicación. |
+| `src/view/web_estilizada/static/` | Contiene recursos estáticos, como la hoja de estilos CSS. |
+| `src/view/main.py` | Interfaz de consola para usar las funciones del proyecto desde la terminal. |
+| `tests/` | Contiene las pruebas unitarias de los cálculos, validaciones y operaciones de base de datos. |
+| `sql/schema.sql` | Archivo SQL de apoyo con instrucciones para crear o borrar tablas y ejemplos de consultas. |
+| `src/verificar_conexion.py` | Comprueba la configuración y la conexión con PostgreSQL. |
+| `.env.example` | Plantilla con los nombres de las variables necesarias para configurar la conexión. |
+| `Liquidacion definitiva.xlsx` | Tablero de casos de prueba utilizado como apoyo para verificar los resultados. |
 
 ---
 
@@ -164,267 +159,116 @@ La carpeta `tests` contiene las pruebas unitarias que permiten verificar el comp
 
 ---
 
-# 🗄️ Base de datos (PostgreSQL en Render)
+# 🗄️ Base de datos PostgreSQL
 
-## 1. Instalar dependencias
+La aplicación utiliza PostgreSQL para guardar empleados y liquidaciones. En este proyecto, la base de datos está alojada en Neon.
 
-Desde la carpeta raíz del proyecto:
+## 1. Crear las bases de datos en Neon
 
-```bash
-pip install -r requirements.txt
-```
+En el proyecto de Neon deben existir dos bases de datos:
 
-## 2. Crear la base de datos en Render
+- `neondb`: base de datos principal de la aplicación.
+- `neondb_test`: base de datos exclusiva para las pruebas unitarias.
 
-1. En [render.com](https://render.com) crea una instancia: **New → PostgreSQL** (por ejemplo con el nombre `liquidacion`).
-2. Cuando esté disponible (*Available*), entra a la instancia, sección **Connections**, y copia: **Hostname (External)**, **Port**, **Database**, **Username** y **Password**.
-3. Crea una segunda base **solo para las pruebas** (su nombre debe terminar en `_test`). Con `psql` y el *External Database URL* de Render:
+Las pruebas pueden borrar y volver a crear tablas. Por eso, `DB_NAME_TEST` debe apuntar siempre a la base de pruebas y nunca a la base principal.
 
-```bash
-psql "<External Database URL>" -c "CREATE DATABASE liquidacion_test;"
-```
+## 2. Configurar la conexión
 
-> Las pruebas borran y crean tablas, por eso **nunca** deben apuntar a la base con datos reales.
->
-> Si tu usuario de Render no tiene permiso para ejecutar `CREATE DATABASE`, crea una **segunda instancia** de PostgreSQL en Render y usa sus datos para `DB_NAME_TEST`.
+El proyecto lee la conexión desde el archivo `.env`, ubicado en la carpeta raíz. Este archivo contiene contraseñas y no se sube a GitHub.
 
-## 3. Configurar la conexión
-
-Los datos de conexión **no se suben a git**. El programa los busca en este orden:
-
-1. **Archivo `.env`** en la raíz del proyecto (recomendado).
-2. **Archivo `src/secret_config.py`** (alternativa).
-
-### Opción A: archivo `.env`
-
-Copia el modelo `.env.example` como `.env` y completa tus datos de Render:
+Copia el archivo de ejemplo:
 
 ```bash
-# Windows
-copy .env.example .env
-
-# Linux / Mac
 cp .env.example .env
 ```
 
-| Variable        | Qué poner                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| `DB_USER`       | Username de Render.                                                                             |
-| `DB_PASSWORD`   | Password de Render.                                                                             |
-| `DB_HOST`       | Hostname **externo** (termina en `.<region>-postgres.render.com`). El interno solo sirve dentro de Render. |
-| `DB_PORT`       | `5432`.                                                                                         |
-| `DB_NAME`       | Nombre de la base **exactamente** como aparece en Render (mayúsculas, guiones y guiones bajos). |
-| `DB_NAME_TEST`  | Base solo para pruebas; debe terminar en `_test`.                                               |
-| `DB_SSLMODE`    | `require` en Render (por defecto). `prefer` para un PostgreSQL local sin SSL.                   |
+En Windows, usa:
 
-### Opción B: archivo `src/secret_config.py`
-
-Copia la plantilla `src/secret_config_sample.py` (sin datos reales) y reemplaza los valores; sigue las instrucciones dentro del archivo:
-
-```bash
-# Windows
-copy src\secret_config_sample.py src\secret_config.py
-
-# Linux / Mac
-cp src/secret_config_sample.py src/secret_config.py
+```powershell
+copy .env.example .env
 ```
 
-### Verificar que la conexión quedó bien
+Abre `.env` y completa los datos que aparecen en Neon, en la opción **Connect**:
+
+| Variable | Valor |
+| --- | --- |
+| `DB_USER` | Usuario de PostgreSQL que muestra Neon. |
+| `DB_PASSWORD` | Contraseña de ese usuario. |
+| `DB_HOST` | Host de Neon, sin `https://` ni otras partes de la cadena de conexión. |
+| `DB_PORT` | Puerto de PostgreSQL, normalmente `5432`. |
+| `DB_NAME` | `neondb`, para usar la base principal. |
+| `DB_NAME_TEST` | `neondb_test`, para que las pruebas usen la base separada. |
+| `DB_SSLMODE` | `require`, para conectar con Neon mediante SSL. |
+
+No compartas ni publiques el contenido de `.env`.
+
+## 3. Verificar la conexión
+
+Desde la carpeta raíz del proyecto, ejecuta:
 
 ```bash
 python src/verificar_conexion.py
 ```
 
-Muestra de dónde se leyó la configuración (nunca imprime la contraseña), prueba la conexión a `DB_NAME` y a `DB_NAME_TEST` y explica qué corregir si algo falla. Con `--crear-bd-test` intenta crear la base de pruebas si no existe.
+El programa comprueba la conexión con la base principal y con la base de pruebas. No muestra la contraseña.
 
-## 4. Crear las tablas
+## 4. Crear las tablas desde la aplicación web
 
-Hay dos formas equivalentes:
+Inicia la aplicación web siguiendo los pasos de la sección **Ejecutar la aplicación web**. En la página, abre **Base de datos** y pulsa **Crear tablas**.
 
-* **Desde el programa**: ejecutarlo (paso siguiente) y elegir la opción **4. Crear las tablas**.
-* **Con SQL**: `psql "<External Database URL>" -f sql/schema.sql` (borra y vuelve a crear las tablas).
+Esta opción crea las tablas que falten y conserva los datos existentes. No elimina las liquidaciones guardadas.
 
-Estructura creada:
+La base de datos contiene estas tablas:
 
-| Tabla           | Columnas principales                                                                                                          |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `empleados`     | `id` (PK), `documento` (único), `nombre`                                                                                      |
-| `liquidaciones` | `id` (PK), `empleado_id` (FK → `empleados`), datos de entrada, conceptos calculados, `total`, `creada_en`                     |
-
----
-
-# 🗄️ Base de datos (PostgreSQL en Render)
-
-## 1. Instalar dependencias
-
-Desde la carpeta raíz del proyecto:
-
-```bash
-pip install -r requirements.txt
-```
-
-## 2. Crear la base de datos en Render
-
-1. En [render.com](https://render.com) crea una instancia: **New → PostgreSQL** (por ejemplo con el nombre `liquidacion`).
-2. Cuando esté disponible (*Available*), entra a la instancia, sección **Connections**, y copia: **Hostname (External)**, **Port**, **Database**, **Username** y **Password**.
-3. Crea una segunda base **solo para las pruebas** (su nombre debe terminar en `_test`). Con `psql` y el *External Database URL* de Render:
-
-```bash
-psql "<External Database URL>" -c "CREATE DATABASE liquidacion_test;"
-```
-
-> Las pruebas borran y crean tablas, por eso **nunca** deben apuntar a la base con datos reales.
->
-> Si tu usuario de Render no tiene permiso para ejecutar `CREATE DATABASE`, crea una **segunda instancia** de PostgreSQL en Render y usa sus datos para `DB_NAME_TEST`.
-
-## 3. Configurar la conexión
-
-Los datos de conexión **no se suben a git**. El programa los busca en este orden:
-
-1. **Archivo `.env`** en la raíz del proyecto (recomendado).
-2. **Archivo `src/secret_config.py`** (alternativa).
-
-### Opción A: archivo `.env`
-
-Copia el modelo `.env.example` como `.env` y completa tus datos de Render:
-
-```bash
-# Windows
-copy .env.example .env
-
-# Linux / Mac
-cp .env.example .env
-```
-
-| Variable        | Qué poner                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| `DB_USER`       | Username de Render.                                                                             |
-| `DB_PASSWORD`   | Password de Render.                                                                             |
-| `DB_HOST`       | Hostname **externo** (termina en `.<region>-postgres.render.com`). El interno solo sirve dentro de Render. |
-| `DB_PORT`       | `5432`.                                                                                         |
-| `DB_NAME`       | Nombre de la base **exactamente** como aparece en Render (mayúsculas, guiones y guiones bajos). |
-| `DB_NAME_TEST`  | Base solo para pruebas; debe terminar en `_test`.                                               |
-| `DB_SSLMODE`    | `require` en Render (por defecto). `prefer` para un PostgreSQL local sin SSL.                   |
-
-### Opción B: archivo `src/secret_config.py`
-
-Copia la plantilla `src/secret_config_sample.py` (sin datos reales) y reemplaza los valores; sigue las instrucciones dentro del archivo:
-
-```bash
-# Windows
-copy src\secret_config_sample.py src\secret_config.py
-
-# Linux / Mac
-cp src/secret_config_sample.py src/secret_config.py
-```
-
-### Verificar que la conexión quedó bien
-
-```bash
-python src/verificar_conexion.py
-```
-
-Muestra de dónde se leyó la configuración (nunca imprime la contraseña), prueba la conexión a `DB_NAME` y a `DB_NAME_TEST` y explica qué corregir si algo falla. Con `--crear-bd-test` intenta crear la base de pruebas si no existe.
-
-## 4. Crear las tablas
-
-Hay dos formas equivalentes:
-
-* **Desde el programa**: ejecutarlo (paso siguiente) y elegir la opción **4. Crear las tablas**.
-* **Con SQL**: `psql "<External Database URL>" -f sql/schema.sql` (borra y vuelve a crear las tablas).
-
-Estructura creada:
-
-| Tabla           | Columnas principales                                                                                                          |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `empleados`     | `id` (PK), `documento` (único), `nombre`                                                                                      |
-| `liquidaciones` | `id` (PK), `empleado_id` (FK → `empleados`), datos de entrada, conceptos calculados, `total`, `creada_en`                     |
-
----
-
-# 🗄️ Base de datos (PostgreSQL en Render)
-
-## 1. Instalar dependencias
-
-Desde la carpeta raíz del proyecto:
-
-```bash
-py src/view/main.py
-```
-
-Se muestra un menú:
-
-1. **Calcular y guardar una liquidación** (pide documento, nombre y los datos del retiro).
-2. **Buscar liquidaciones por documento.**
-3. **Buscar una liquidación por id.**
-4. **Crear las tablas.**
-5. **Borrar las tablas** (pide confirmación).
-
-## Ejecutar las pruebas unitarias
-
-Requieren que `DB_NAME_TEST` exista y esté configurada (en `.env` o `src/secret_config.py`). Desde la carpeta raíz ejecutar:
-
-```bash
-py -m unittest tests.test_liquidacion -v
-```
-
-También se pueden ejecutar todas las pruebas mediante descubrimiento automático:
-
-```bash
-# Windows
-copy .env.example .env
-
-# Linux / Mac
-cp .env.example .env
-```
-
-| Variable        | Qué poner                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------- |
-| `DB_USER`       | Username de Render.                                                                             |
-| `DB_PASSWORD`   | Password de Render.                                                                             |
-| `DB_HOST`       | Hostname **externo** (termina en `.<region>-postgres.render.com`). El interno solo sirve dentro de Render. |
-| `DB_PORT`       | `5432`.                                                                                         |
-| `DB_NAME`       | Nombre de la base **exactamente** como aparece en Render (mayúsculas, guiones y guiones bajos). |
-| `DB_NAME_TEST`  | Base solo para pruebas; debe terminar en `_test`.                                               |
-| `DB_SSLMODE`    | `require` en Render (por defecto). `prefer` para un PostgreSQL local sin SSL.                   |
-
-### Opción B: archivo `src/secret_config.py`
-
-Copia la plantilla `src/secret_config_sample.py` (sin datos reales) y reemplaza los valores; sigue las instrucciones dentro del archivo:
-
-```bash
-# Windows
-copy src\secret_config_sample.py src\secret_config.py
-
-# Linux / Mac
-cp src/secret_config_sample.py src/secret_config.py
-```
-
-### Verificar que la conexión quedó bien
-
-```bash
-python src/verificar_conexion.py
-```
-
-Muestra de dónde se leyó la configuración (nunca imprime la contraseña), prueba la conexión a `DB_NAME` y a `DB_NAME_TEST` y explica qué corregir si algo falla. Con `--crear-bd-test` intenta crear la base de pruebas si no existe.
-
-## 4. Crear las tablas
-
-Hay dos formas equivalentes:
-
-* **Desde el programa**: ejecutarlo (paso siguiente) y elegir la opción **4. Crear las tablas**.
-* **Con SQL**: `psql "<External Database URL>" -f sql/schema.sql` (borra y vuelve a crear las tablas).
-
-Estructura creada:
-
-| Tabla           | Columnas principales                                                                                                          |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `empleados`     | `id` (PK), `documento` (único), `nombre`                                                                                      |
-| `liquidaciones` | `id` (PK), `empleado_id` (FK → `empleados`), datos de entrada, conceptos calculados, `total`, `creada_en`                     |
-
----
+| Tabla | Propósito |
+| --- | --- |
+| `empleados` | Guarda el documento y el nombre de cada empleado. |
+| `liquidaciones` | Guarda los datos de cada liquidación y los valores calculados. Cada registro se relaciona con un empleado. |
 
 # ▶️ Cómo ejecutar
+
+## Ejecutar la aplicación web
+
+### 1. Instalar dependencias
+
+Desde la carpeta raíz del proyecto, ejecuta:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Configurar la base de datos
+
+Asegúrate de haber creado el archivo `.env` y completado sus datos de conexión, como se explica en la sección **Base de datos PostgreSQL**.
+
+### 3. Crear una clave secreta de Flask
+
+En Linux, macOS o Codespaces, ejecuta:
+
+```bash
+export FLASK_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+```
+
+En Windows PowerShell, ejecuta:
+
+```powershell
+$env:FLASK_SECRET_KEY = python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+### 4. Iniciar la aplicación
+
+Desde la carpeta raíz del proyecto, ejecuta:
+
+```bash
+python src/view/web_estilizada/app.py
+```
+
+### 5. Abrir la página
+
+- En un entorno local, abre `http://127.0.0.1:5000` en el navegador.
+- En GitHub Codespaces, abre la pestaña **Ports**, busca el puerto `5000` y pulsa el enlace para abrir la aplicación.
+
+Para detener el servidor, vuelve a la terminal y presiona `Ctrl+C`.
 
 ## Calcular, guardar y buscar liquidaciones por consola
 
@@ -633,7 +477,7 @@ El objetivo es verificar que el sistema rechace los datos incorrectos y genere e
 # 🛠️ Tecnologías utilizadas
 
 * **Python 3.12**
-* **PostgreSQL** alojado en **Render** — base de datos.
+* * **PostgreSQL** alojado en **Neon** — base de datos.
 * **SQLAlchemy 2** (ORM) y **psycopg2** — acceso a la base de datos.
 * **python-dotenv** — lectura del archivo `.env`.
 * **unittest** — pruebas unitarias.
