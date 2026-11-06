@@ -227,9 +227,9 @@ La base de datos contiene estas tablas:
 
 # ▶️ Cómo ejecutar
 
-## Ejecutar la aplicación web
+## Ejecutar las aplicaciones web
 
-### 1. Instalar dependencias
+### 1. Instalar dependencias web
 
 Desde la carpeta raíz del proyecto, ejecuta:
 
@@ -237,38 +237,50 @@ Desde la carpeta raíz del proyecto, ejecuta:
 pip install -r requirements-web.txt
 ```
 
-### 2. Configurar la base de datos
+### 2. Configurar la conexión y la clave de Flask
 
-Asegúrate de haber creado el archivo `.env` y completado sus datos de conexión, como se explica en la sección **Base de datos PostgreSQL**.
+Configura el archivo `.env` como se explica en la sección **Base de datos PostgreSQL**.
 
-### 3. Crear una clave secreta de Flask
-
-En Linux, macOS o Codespaces, ejecuta:
+En Linux, macOS o Codespaces, genera la clave de Flask con:
 
 ```bash
 export FLASK_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
 ```
 
-En Windows PowerShell, ejecuta:
+En Windows PowerShell:
 
 ```powershell
 $env:FLASK_SECRET_KEY = python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-### 4. Iniciar la aplicación
+### 3. Ejecutar la versión HTML sencilla
 
-Desde la carpeta raíz del proyecto, ejecuta:
+Desde la carpeta raíz, ejecuta:
+
+```bash
+python src/view/web/app.py
+```
+
+Abre `http://127.0.0.1:5000` en el navegador. Para iniciar la otra versión, detén primero esta con `Ctrl+C`.
+
+### 4. Ejecutar la versión con estilo
+
+Desde la carpeta raíz, ejecuta:
 
 ```bash
 python src/view/web_estilizada/app.py
 ```
 
-### 5. Abrir la página
+Abre `http://127.0.0.1:5000` en el navegador.
 
-- En un entorno local, abre `http://127.0.0.1:5000` en el navegador.
-- En GitHub Codespaces, abre la pestaña **Ports**, busca el puerto `5000` y pulsa el enlace para abrir la aplicación.
+En GitHub Codespaces, usa la pestaña **Ports** y abre el enlace del puerto `5000`.
 
-Para detener el servidor, vuelve a la terminal y presiona `Ctrl+C`.
+### Aplicaciones publicadas
+
+- [Versión HTML sencilla](https://liquidacion-definitiva-html.onrender.com)
+- [Versión con estilo](https://liquidacion-definitiva-tfe4.onrender.com)
+
+Las dos versiones usan la misma base de datos Neon y comparten los registros.
 
 ## Calcular, guardar y buscar liquidaciones por consola
 
