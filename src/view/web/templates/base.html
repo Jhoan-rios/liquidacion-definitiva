@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block titulo %}Sistema de Liquidación Definitiva{% endblock %}</title>
+</head>
+<body>
+
+    <header>
+        <h1>Sistema de Liquidación Definitiva</h1>
+
+        <nav>
+            <a href="{{ url_for('inicio.inicio') }}">Inicio</a> |
+            <a href="{{ url_for('liquidacion.nueva') }}">Nueva liquidación</a> |
+            <a href="{{ url_for('busqueda.buscar') }}">Buscar</a> |
+            <a href="{{ url_for('base_datos.base_datos') }}">Base de datos</a>
+        </nav>
+    </header>
+
+    <hr>
+
+    <main>
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% if mensajes %}
+                {% for categoria, mensaje in mensajes %}
+                    <p><strong>{{ categoria }}:</strong> {{ mensaje }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block contenido %}{% endblock %}
+    </main>
+
+    <hr>
+
+    <footer>
+        <p>Aplicación web de liquidación definitiva.</p>
+    </footer>
+
+</body>
+</html>

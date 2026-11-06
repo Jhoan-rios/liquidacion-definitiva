@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+
+{% block titulo %}Buscar liquidaciones{% endblock %}
+
+{% block contenido %}
+
+<section class="seccion">
+    <div class="encabezado-pagina">
+        <span class="texto-secundario">CONSULTA DE INFORMACIÓN</span>
+        <h1>Buscar liquidaciones</h1>
+        <p>Busca por el documento del empleado o por el ID de la liquidación.</p>
+    </div>
+
+    <form class="tarjeta formulario formulario--en-linea"
+          method="get"
+          action="{{ url_for('busqueda.buscar') }}">
+
+        <div class="campo">
+            <label for="criterio">Buscar por</label>
+            <select id="criterio" name="criterio">
+                <option value="documento"
+                    {% if criterio == "documento" %}selected{% endif %}>
+                    Documento
+                </option>
+                <option value="id"
+                    {% if criterio == "id" %}selected{% endif %}>
+                    ID de liquidación
+                </option>
+            </select>
+        </div>
+
+        <div class="campo">
+            <label for="valor">Valor</label>
+            <input type="text"
+                   id="valor"
+                   name="valor"
+                   value="{{ valor }}"
+                   placeholder="Escribe el documento o el ID"
+                   required>
+        </div>
+
+        <button class="boton boton--principal" type="submit">
+            {{ icono("buscar") }}
+            Buscar
+        </button>
+    </form>
+</section>
+
+{% if valor %}
+<section class="seccion">
+    {% if liquidaciones %}
+        <div class="encabezado-pagina">
+            <span class="texto-secundario">RESULTADOS</span>
+            <h2>Liquidaciones encontradas</h2>
+        </div>
+
+        <div class="tarjeta tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Documento</th>
+                        <th>Empleado</th>
+                        <th>Tipo de retiro</th>
+                        <th>Fecha de retiro</th>
+                        <th>Total</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for liquidacion in liquidaciones %}
+                    <tr>
+                        <td>{{ liquidacion["id"] }}</td>
+                        <td>{{ liquidacion["documento"] }}</td>
+                        <td>{{ liquidacion["nombre"] }}</td>
+                        <td>{{ liquidacion["tipo_retiro"] }}</td>
+                        <td>{{ liquidacion["fecha_retiro"] }}</td>
+                        <td class="total">{{ liquidacion["total"]|moneda }}</td>
+                        <td>
+                            <a href="{{ url_for(
+                                'liquidacion.detalle',
+                                id_liquidacion=liquidacion['id']
+                            ) }}">
+                                Ver detalle
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="estado-vacio">
+            <h3>No se encontraron liquidaciones</h3>
+            <p>Verifica el dato ingresado e intenta nuevamente.</p>
+        </div>
+    {% endif %}
+</section>
+{% endif %}
+
+{% endblock %}

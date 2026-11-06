@@ -1,0 +1,43 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Buscar liquidaciones{% endblock %}
+
+{% block contenido %}
+
+<h2>Buscar liquidaciones por documento</h2>
+
+<form method="POST">
+
+    <label for="documento">Documento del empleado:</label>
+
+    <input
+        type="text"
+        id="documento"
+        name="documento"
+        maxlength="20"
+        value="{{ documento }}"
+        required
+    >
+
+    <button type="submit">Buscar</button>
+
+</form>
+
+{% if liquidaciones %}
+
+<h3>Resultados encontrados</h3>
+
+{% for liquidacion in liquidaciones %}
+
+<section>
+    {% include "_detalle_liquidacion.html" %}
+
+    <hr>
+</section>
+
+{% endfor %}
+
+{% endif %}
+
+{% endblock %}

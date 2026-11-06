@@ -1,0 +1,33 @@
+
+<h2>Información de la liquidación</h2>
+
+<p><strong>ID:</strong> {{ liquidacion.id }}</p>
+<p><strong>Documento:</strong> {{ liquidacion.documento }}</p>
+<p><strong>Empleado:</strong> {{ liquidacion.nombre }}</p>
+<p><strong>Tipo de retiro:</strong> {{ liquidacion.tipo_retiro }}</p>
+
+<h3>Datos laborales</h3>
+
+<p><strong>Salario:</strong> {{ liquidacion.salario|moneda }}</p>
+<p><strong>Fecha de ingreso:</strong> {{ liquidacion.fecha_ingreso }}</p>
+<p><strong>Fecha de retiro:</strong> {{ liquidacion.fecha_retiro }}</p>
+<p><strong>Vacaciones disfrutadas:</strong> {{ liquidacion.vacaciones_disfrutadas }}</p>
+
+<h3>Conceptos calculados</h3>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Concepto</th>
+        <th>Valor</th>
+    </tr>
+    <tr><td>Salario restante</td><td>{{ liquidacion.salario_restante|moneda }}</td></tr>
+    <tr><td>Prima</td><td>{{ liquidacion.prima|moneda }}</td></tr>
+    <tr><td>Cesantías</td><td>{{ liquidacion.cesantias|moneda }}</td></tr>
+    <tr><td>Intereses</td><td>{{ liquidacion.intereses|moneda }}</td></tr>
+    <tr><td>Vacaciones</td><td>{{ liquidacion.vacaciones|moneda }}</td></tr>
+    <tr><td>Indemnización</td><td>{{ liquidacion.indemnizacion|moneda }}</td></tr>
+    <tr>
+        <th>TOTAL</th>
+        <th>{{ liquidacion.total|moneda }}</th>
+    </tr>
+</table>

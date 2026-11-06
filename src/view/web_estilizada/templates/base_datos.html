@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block titulo %}Base de datos{% endblock %}
+
+{% block contenido %}
+
+<section class="seccion">
+    <div class="encabezado-pagina">
+        <div>
+            <span class="texto-secundario">INFORMACIÓN DEL SISTEMA</span>
+            <h1>Base de datos</h1>
+            <p>Consulta los empleados registrados y sus liquidaciones.</p>
+        </div>
+    </div>
+
+    <section class="tarjeta">
+        <h2>Crear las tablas</h2>
+        <p>
+            Usa esta opción la primera vez para preparar la base de datos.
+            Si las tablas ya existen, se conservan.
+        </p>
+
+        <form method="post"
+            action="{{ url_for('base_datos.crear_tablas') }}">
+            <button class="boton boton--principal" type="submit">
+                Crear tablas
+            </button>
+        </form>
+    </section>
+
+    <div class="resumen">
+        <article class="resumen__total">
+            <span class="etiqueta">EMPLEADOS REGISTRADOS</span>
+            <strong class="cifra">{{ empleados|length }}</strong>
+            <p>Empleados almacenados en el sistema.</p>
+        </article>
+
+        <article class="concepto">
+            <span>Información disponible</span>
+            <strong>Registro de empleados</strong>
+            <p>Consulta los documentos y la cantidad de liquidaciones asociadas a cada empleado.</p>
+        </article>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="encabezado-pagina">
+        <div>
+            <span class="texto-secundario">REGISTROS</span>
+            <h2>Empleados registrados</h2>
+        </div>
+    </div>
+
+    {% if empleados %}
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Liquidaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for empleado in empleados %}
+                    <tr>
+                        <td>{{ empleado["nombre"] }}</td>
+                        <td>{{ empleado["documento"] }}</td>
+                        <td>{{ empleado["cantidad_liquidaciones"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="aviso">
+            Todavía no hay empleados registrados en la base de datos.
+        </div>
+    {% endif %}
+</section>
+
+<section class="seccion" id="liquidaciones">
+    <div class="encabezado-pagina">
+        <div>
+            <span class="texto-secundario">REGISTROS</span>
+            <h2>Liquidaciones registradas</h2>
+            <p>Consulta los cálculos guardados y abre el detalle de cada uno.</p>
+        </div>
+    </div>
+
+    {% if liquidaciones %}
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Empleado</th>
+                        <th>Documento</th>
+                        <th>Tipo de retiro</th>
+                        <th>Fecha de retiro</th>
+                        <th>Total</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for liquidacion in liquidaciones %}
+                    <tr>
+                        <td>{{ liquidacion["id"] }}</td>
+                        <td>{{ liquidacion["nombre"] }}</td>
+                        <td>{{ liquidacion["documento"] }}</td>
+                        <td>{{ liquidacion["tipo_retiro"] }}</td>
+                        <td>{{ liquidacion["fecha_retiro"] }}</td>
+                        <td>{{ liquidacion["total"]|moneda }}</td>
+                        <td>
+                            <a class="boton boton--secundario"
+                               href="{{ url_for(
+                                   'liquidacion.detalle',
+                                   id_liquidacion=liquidacion['id']
+                               ) }}">
+                                Ver detalle
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="aviso">
+            Todavía no hay liquidaciones registradas.
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

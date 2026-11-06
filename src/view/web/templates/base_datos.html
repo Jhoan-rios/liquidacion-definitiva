@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Base de datos{% endblock %}
+
+{% block contenido %}
+
+<h2>Empleados registrados</h2>
+
+{% if empleados %}
+
+<table border="1" cellpadding="8">
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Cantidad de liquidaciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for empleado in empleados %}
+        <tr>
+            <td>{{ empleado.id }}</td>
+            <td>{{ empleado.documento }}</td>
+            <td>{{ empleado.nombre }}</td>
+            <td>{{ empleado.cantidad_liquidaciones }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+</table>
+
+{% else %}
+
+<p>No hay empleados registrados.</p>
+
+{% endif %}
+
+{% endblock %}
