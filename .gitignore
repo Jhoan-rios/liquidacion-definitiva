@@ -37,10 +37,13 @@ test-results/
 
 .env
 .env.*
+!.env.example
+src/secret_config.py
 .venv/
 venv/
 env/
 ENV/
+
 # ==========================
 # Archivos del sistema
 # ==========================

@@ -1,0 +1,56 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+
+<h2>Panel principal</h2>
+
+<p>Bienvenido al sistema de liquidación definitiva.</p>
+
+<h3>Empleados registrados</h3>
+
+<p>Total de empleados: {{ empleados|length }}</p>
+
+<h3>Últimas liquidaciones</h3>
+
+{% if liquidaciones %}
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Documento</th>
+            <th>Empleado</th>
+            <th>Tipo de retiro</th>
+            <th>Total</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for liquidacion in liquidaciones %}
+        <tr>
+            <td>{{ liquidacion.id }}</td>
+            <td>{{ liquidacion.documento }}</td>
+            <td>{{ liquidacion.nombre }}</td>
+            <td>{{ liquidacion.tipo_retiro }}</td>
+            <td>{{ liquidacion.total|moneda }}</td>
+            <td>
+                <a href="{{ url_for('liquidacion.detalle', id_liquidacion=liquidacion.id) }}">
+                    Ver detalle
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+<p>No hay liquidaciones registradas.</p>
+
+{% endif %}
+
+{% endblock %}

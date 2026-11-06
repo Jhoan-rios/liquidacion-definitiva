@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% from "_iconos.html" import icono %}
+
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+
+<section class="hero">
+    <div class="hero__contenido">
+        <span class="etiqueta-pildora">
+            {{ icono("chispa") }}
+            Liquidación definitiva de empleados
+        </span>
+
+        <h1>Calcula la liquidación
+            <span>definitiva de tus empleados</span>
+        </h1>
+
+        <p>
+            Ingresa los datos del retiro y obtén
+            <strong>prima</strong>, <strong>cesantías</strong>,
+            <strong>intereses</strong>, <strong>vacaciones</strong> e
+            <strong>indemnización</strong> con total claridad.
+            Guárdalas y consúltalas cuando quieras.
+        </p>
+
+        <div class="hero__botones">
+            <a class="boton boton--principal"
+               href="{{ url_for('liquidacion.nueva') }}">
+                Calcular una liquidación
+            </a>
+
+            <a class="boton boton--secundario"
+               href="{{ url_for('busqueda.buscar') }}">
+                Buscar liquidaciones
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="conceptos-franja">
+    Un solo cálculo con <strong>todos los conceptos</strong> de la liquidación
+    <ul>
+        <li>SALARIO</li>
+        <li>PRIMA</li>
+        <li>CESANTÍAS</li>
+        <li>INTERESES</li>
+        <li>VACACIONES</li>
+        <li>INDEMNIZACIÓN</li>
+    </ul>
+</section>
+
+<section class="cuadro-ejemplo">
+    <div class="ejemplo-titulo">
+        <h2>Así funciona</h2>
+        <p>Datos ficticios; los montos son los que calcula la aplicación.</p>
+    </div>
+
+    <div class="ejemplo">
+        <div class="ejemplo__col">
+            <span class="ejemplo__paso">1 · Ingresas los datos</span>
+
+            <div class="tarjeta">
+                <dl class="datos">
+                    <div><dt>Nombre del empleado/a</dt><dd>Ana Pérez</dd></div>
+                    <div><dt>Documento (id del empleado/a)</dt><dd><span class="etiqueta-id">1001</span></dd></div>
+                    <div><dt>Tipo de retiro</dt><dd>Despido sin justa causa</dd></div>
+                    <div><dt>Salario mensual</dt><dd>$2.500.000,00</dd></div>
+                    <div><dt>Ingreso → Retiro</dt><dd>15/03/2022 → 31/01/2025</dd></div>
+                    <div><dt>Vacaciones disfrutadas</dt><dd>5 días</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="ejemplo__col">
+            <span class="ejemplo__paso">2 · Obtienes el resultado</span>
+
+            <div class="resumen">
+                <div class="resumen__total">
+                    <span class="etiqueta">TOTAL</span>
+                    <strong class="cifra">$28.722.937,50</strong>
+                    <span class="chip">Despido sin justa causa</span>
+                </div>
+
+                <div class="conceptos">
+                    <div class="concepto"><span>Salario restante</span><strong>$2.583.333,33</strong></div>
+                    <div class="concepto"><span>Prima</span><strong>$7.312.500,00</strong></div>
+                    <div class="concepto"><span>Cesantías</span><strong>$7.312.500,00</strong></div>
+                    <div class="concepto"><span>Intereses</span><strong>$2.566.687,50</strong></div>
+                    <div class="concepto"><span>Vacaciones</span><strong>$3.239.583,33</strong></div>
+                    <div class="concepto"><span>Indemnización</span><strong>$5.708.333,33</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="encabezado-pagina">
+        <div>
+            <span class="texto-secundario">GESTIÓN</span>
+            <h2>Panel de control</h2>
+            <p>Consulta la información registrada en el sistema.</p>
+        </div>
+    </div>
+
+    <div class="resumen-grid">
+        <article class="tarjeta-resumen">
+            <span class="tarjeta-resumen__icono">
+                {{ icono("calculadora") }}
+            </span>
+            <p>Liquidaciones registradas</p>
+            <strong>{{ liquidaciones|length }}</strong>
+        </article>
+
+        <article class="tarjeta-resumen">
+            <span class="tarjeta-resumen__icono">
+                {{ icono("base") }}
+            </span>
+            <p>Empleados registrados</p>
+            <strong>{{ empleados|length }}</strong>
+        </article>
+    </div>
+</section>
+
+<section class="seccion">
+    <div class="encabezado-pagina">
+        <div>
+            <span class="texto-secundario">ACTIVIDAD RECIENTE</span>
+            <h2>Últimas liquidaciones</h2>
+        </div>
+
+        <a class="boton boton--secundario boton--chico"
+           href="{{ url_for('busqueda.buscar') }}">
+            Ver búsqueda
+        </a>
+    </div>
+
+    {% if liquidaciones %}
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Documento</th>
+                        <th>Tipo de retiro</th>
+                        <th>Salario</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for liquidacion in liquidaciones %}
+                        <tr>
+                            <td>{{ liquidacion.nombre }}</td>
+                            <td>{{ liquidacion.documento }}</td>
+                            <td>{{ liquidacion.tipo_retiro }}</td>
+                            <td>{{ liquidacion.salario|moneda }}</td>
+                            <td>
+                                <a href="{{ url_for('liquidacion.detalle', id_liquidacion=liquidacion.id) }}">
+                                    Consultar
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="estado-vacio">
+            <h3>Aún no hay liquidaciones</h3>
+            <p>Cuando registres una liquidación, aparecerá aquí.</p>
+            <a class="boton boton--principal"
+               href="{{ url_for('liquidacion.nueva') }}">
+                Crear primera liquidación
+            </a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

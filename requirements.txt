@@ -1,3 +1,5 @@
+gunicorn>=23.0
+Flask>=3.0
 SQLAlchemy>=2.0
 psycopg2-binary>=2.9
 python-dotenv>=1.0

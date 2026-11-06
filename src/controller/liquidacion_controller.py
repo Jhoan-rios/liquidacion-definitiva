@@ -51,7 +51,8 @@ def validar_documento(documento: str) -> str:
 
     if (
         not documento
-        or not documento.isalnum()
+        or not documento.isascii()
+        or not documento.isdecimal()
         or len(documento) > LONGITUD_MAXIMA_DOCUMENTO
     ):
         raise DocumentoInvalidoError()

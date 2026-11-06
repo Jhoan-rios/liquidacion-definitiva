@@ -1,0 +1,164 @@
+{% from "_iconos.html" import icono %}
+
+<section class="seccion resultado">
+    <div class="encabezado-pagina">
+        <div>
+            <h1>Liquidación guardada</h1>
+            <p>Este es el resultado del cálculo.</p>
+        </div>
+    </div>
+
+    <div class="resultado__resumen">
+        <article class="resultado__total">
+            <span class="resultado__etiqueta">TOTAL</span>
+
+            <strong>{{ liquidacion["total"]|moneda }}</strong>
+
+            <p>
+                {{ liquidacion["nombre"] }}
+                · Documento {{ liquidacion["documento"] }}
+            </p>
+
+            <span class="resultado__retiro">
+                {{ liquidacion["tipo_retiro"] }}
+            </span>
+        </article>
+
+        <div class="resultado__conceptos">
+            <article class="resultado__concepto">
+                <span>Salario restante</span>
+                <strong>{{ liquidacion["salario_restante"]|moneda }}</strong>
+            </article>
+
+            <article class="resultado__concepto">
+                <span>Prima</span>
+                <strong>{{ liquidacion["prima"]|moneda }}</strong>
+            </article>
+
+            <article class="resultado__concepto">
+                <span>Cesantías</span>
+                <strong>{{ liquidacion["cesantias"]|moneda }}</strong>
+            </article>
+
+            <article class="resultado__concepto">
+                <span>Intereses sobre cesantías</span>
+                <strong>{{ liquidacion["intereses"]|moneda }}</strong>
+            </article>
+
+            <article class="resultado__concepto">
+                <span>Vacaciones pendientes</span>
+                <strong>{{ liquidacion["vacaciones"]|moneda }}</strong>
+            </article>
+
+            <article class="resultado__concepto">
+                <span>Indemnización</span>
+                <strong>{{ liquidacion["indemnizacion"]|moneda }}</strong>
+            </article>
+        </div>
+    </div>
+
+    <article class="formulario__seccion resultado__datos">
+        <h2>Datos de la liquidación</h2>
+
+        <dl class="datos">
+            <div>
+                <dt>ID</dt>
+                <dd>{{ liquidacion["id"] }}</dd>
+            </div>
+
+            <div>
+                <dt>Salario mensual</dt>
+                <dd>{{ liquidacion["salario"]|moneda }}</dd>
+            </div>
+
+            <div>
+                <dt>Fecha de ingreso</dt>
+                <dd>{{ liquidacion["fecha_ingreso"] }}</dd>
+            </div>
+
+            <div>
+                <dt>Fecha de retiro</dt>
+                <dd>{{ liquidacion["fecha_retiro"] }}</dd>
+            </div>
+
+            <div>
+                <dt>Vacaciones disfrutadas</dt>
+                <dd>{{ liquidacion["vacaciones_disfrutadas"] }} días</dd>
+            </div>
+        </dl>
+    </article>
+
+    <article class="formulario__seccion resultado__desglose">
+        <h2>Desglose de la liquidación</h2>
+        <p>Detalle de los valores calculados para cada concepto.</p>
+
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concepto</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Salario restante</td>
+                        <td>{{ liquidacion["salario_restante"]|moneda }}</td>
+                    </tr>
+                    <tr>
+                        <td>Prima de servicios</td>
+                        <td>{{ liquidacion["prima"]|moneda }}</td>
+                    </tr>
+                    <tr>
+                        <td>Cesantías</td>
+                        <td>{{ liquidacion["cesantias"]|moneda }}</td>
+                    </tr>
+                    <tr>
+                        <td>Intereses a las cesantías</td>
+                        <td>{{ liquidacion["intereses"]|moneda }}</td>
+                    </tr>
+                    <tr>
+                        <td>Vacaciones</td>
+                        <td>{{ liquidacion["vacaciones"]|moneda }}</td>
+                    </tr>
+                    <tr>
+                        <td>Indemnización</td>
+                        <td>{{ liquidacion["indemnizacion"]|moneda }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Total</th>
+                        <th>{{ liquidacion["total"]|moneda }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </article>
+
+    <div class="formulario__acciones resultado__acciones">
+        <a href="{{ url_for('inicio.inicio') }}"
+           class="boton boton--secundario">
+            Volver al inicio
+        </a>
+
+        <a href="{{ url_for('liquidacion.nueva') }}"
+           class="boton boton--principal">
+            {{ icono("calculadora") }}
+            Nueva liquidación
+        </a>
+
+        <form method="post"
+              action="{{ url_for(
+                  'liquidacion.eliminar',
+                  id_liquidacion=liquidacion['id']
+              ) }}"
+              onsubmit="return confirm(
+                  '¿Seguro que deseas eliminar esta liquidación? Esta acción no se puede deshacer.'
+              );">
+            <button class="boton boton--peligro" type="submit">
+                Eliminar liquidación
+            </button>
+        </form>
+    </div>
+</section>

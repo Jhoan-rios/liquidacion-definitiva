@@ -1,0 +1,71 @@
+
+{% extends "base.html" %}
+
+{% block titulo %}Nueva liquidación{% endblock %}
+
+{% block contenido %}
+
+<h2>Registrar nueva liquidación</h2>
+
+<form method="POST">
+
+    <fieldset>
+        <legend>Información del empleado</legend>
+
+        <p>
+            <label for="documento">Documento:</label><br>
+            <input type="text" id="documento" name="documento"
+                   maxlength="20" required>
+        </p>
+
+        <p>
+            <label for="nombre">Nombre completo:</label><br>
+            <input type="text" id="nombre" name="nombre"
+                   maxlength="100" required>
+        </p>
+    </fieldset>
+
+    <fieldset>
+        <legend>Información laboral</legend>
+
+        <p>
+            <label for="tipo_retiro">Tipo de retiro:</label><br>
+            <select id="tipo_retiro" name="tipo_retiro" required>
+                {% for tipo in tipos_retiro %}
+                    <option value="{{ tipo }}">{{ tipo }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
+        <p>
+            <label for="salario">Salario mensual:</label><br>
+            <input type="number" id="salario" name="salario"
+                   min="0.01" step="0.01" required>
+        </p>
+
+        <p>
+            <label for="fecha_ingreso">Fecha de ingreso:</label><br>
+            <input type="date" id="fecha_ingreso" name="fecha_ingreso"
+                   required>
+        </p>
+
+        <p>
+            <label for="fecha_retiro">Fecha de retiro:</label><br>
+            <input type="date" id="fecha_retiro" name="fecha_retiro"
+                   required>
+        </p>
+
+        <p>
+            <label for="vacaciones_disfrutadas">
+                Días de vacaciones disfrutadas:
+            </label><br>
+            <input type="number" id="vacaciones_disfrutadas"
+                   name="vacaciones_disfrutadas" min="0" required>
+        </p>
+    </fieldset>
+
+    <button type="submit">Calcular y registrar</button>
+
+</form>
+
+{% endblock %}
