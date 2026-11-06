@@ -234,7 +234,7 @@ La base de datos contiene estas tablas:
 Desde la carpeta raíz del proyecto, ejecuta:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-web.txt
 ```
 
 ### 2. Configurar la base de datos
