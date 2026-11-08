@@ -69,20 +69,16 @@
                         <td>{{ empleado["documento"] }}</td>
                         <td>{{ empleado["cantidad_liquidaciones"] }}</td>
                         <td>
-                            {% if empleado["cantidad_liquidaciones"] == 0 %}
-                                <form method="post"
-                                      action="{{ url_for(
-                                          'base_datos.eliminar_empleado',
-                                          documento=empleado['documento']
-                                      ) }}"
-                                      onsubmit="return confirm('¿Seguro que deseas eliminar este empleado?');">
-                                    <button class="boton boton--peligro" type="submit">
-                                        Eliminar
-                                    </button>
-                                </form>
-                            {% else %}
-                                Tiene liquidaciones
-                            {% endif %}
+                            <form method="post"
+                                  action="{{ url_for(
+                                      'base_datos.eliminar_empleado',
+                                      documento=empleado['documento']
+                                  ) }}"
+                                  onsubmit="return confirm('Se eliminará este empleado y sus {{ empleado['cantidad_liquidaciones'] }} liquidaciones. No se puede deshacer. ¿Continuar?');">
+                                <button class="boton boton--peligro" type="submit">
+                                    Eliminar empleado y liquidaciones
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
