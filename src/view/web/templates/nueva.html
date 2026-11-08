@@ -15,7 +15,11 @@
         <p>
             <label for="documento">Documento:</label><br>
             <input type="text" id="documento" name="documento"
-                   maxlength="20" required>
+                   inputmode="numeric"
+                   pattern="[0-9]{1,20}"
+                   maxlength="20"
+                   title="Ingresa entre 1 y 20 dígitos, sin puntos ni espacios."
+                   required>
         </p>
 
         <p>
