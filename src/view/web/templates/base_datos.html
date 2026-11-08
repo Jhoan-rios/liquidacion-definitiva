@@ -1,42 +1,90 @@
-
 {% extends "base.html" %}
 
 {% block titulo %}Base de datos{% endblock %}
 
 {% block contenido %}
 
-<h2>Empleados registrados</h2>
+<h1>Base de datos</h1>
+<p>Consulta los empleados y las liquidaciones registradas.</p>
 
-{% if empleados %}
+<section>
+    <h2>Preparar la base de datos</h2>
+    <p>Esta opción crea las tablas que falten y conserva los datos existentes.</p>
 
-<table border="1" cellpadding="8">
+    <form method="post" action="{{ url_for('base_datos.crear_tablas') }}">
+        <button type="submit">Crear tablas</button>
+    </form>
+</section>
 
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Documento</th>
-            <th>Nombre</th>
-            <th>Cantidad de liquidaciones</th>
-        </tr>
-    </thead>
+<section>
+    <h2>Empleados registrados</h2>
 
-    <tbody>
-        {% for empleado in empleados %}
-        <tr>
-            <td>{{ empleado.id }}</td>
-            <td>{{ empleado.documento }}</td>
-            <td>{{ empleado.nombre }}</td>
-            <td>{{ empleado.cantidad_liquidaciones }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+    {% if empleados %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Documento</th>
+                    <th>Nombre</th>
+                    <th>Cantidad de liquidaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for empleado in empleados %}
+                <tr>
+                    <td>{{ empleado["id"] }}</td>
+                    <td>{{ empleado["documento"] }}</td>
+                    <td>{{ empleado["nombre"] }}</td>
+                    <td>{{ empleado["cantidad_liquidaciones"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay empleados registrados.</p>
+    {% endif %}
+</section>
 
-</table>
+<section id="liquidaciones">
+    <h2>Liquidaciones registradas</h2>
 
-{% else %}
-
-<p>No hay empleados registrados.</p>
-
-{% endif %}
+    {% if liquidaciones %}
+        <table border="1" cellpadding="8">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Empleado</th>
+                    <th>Documento</th>
+                    <th>Tipo de retiro</th>
+                    <th>Fecha de retiro</th>
+                    <th>Total</th>
+                    <th>Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for liquidacion in liquidaciones %}
+                <tr>
+                    <td>{{ liquidacion["id"] }}</td>
+                    <td>{{ liquidacion["nombre"] }}</td>
+                    <td>{{ liquidacion["documento"] }}</td>
+                    <td>{{ liquidacion["tipo_retiro"] }}</td>
+                    <td>{{ liquidacion["fecha_retiro"] }}</td>
+                    <td>{{ liquidacion["total"]|moneda }}</td>
+                    <td>
+                        <a href="{{ url_for(
+                            'liquidacion.detalle',
+                            id_liquidacion=liquidacion['id']
+                        ) }}">
+                            Ver detalle
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay liquidaciones registradas.</p>
+    {% endif %}
+</section>
 
 {% endblock %}
