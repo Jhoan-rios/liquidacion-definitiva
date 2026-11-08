@@ -55,33 +55,26 @@ def crear_tablas():
     "/base-datos/empleados/<string:documento>/eliminar",
     methods=["POST"],
 )
-
 def eliminar_empleado(documento):
-    """Elimina un empleado solo si no tiene liquidaciones asociadas."""
+    """Elimina un empleado y sus liquidaciones asociadas."""
 
     try:
-        controlador = obtener_controlador()
-        empleados = controlador.listar_empleados()
+        borradas = obtener_controlador().eliminar_empleado(documento)
 
-        empleado = next(
-            (
-                registro
-                for registro in empleados
-                if registro["documento"] == documento
-            ),
-            None,
-        )
-
-        if empleado and empleado["cantidad_liquidaciones"] > 0:
+        if borradas:
             flash(
-                "No se puede eliminar este empleado porque tiene liquidaciones asociadas.",
-                "error",
+                f"Se eliminó el empleado y sus {borradas} liquidaciones asociadas.",
+                "exito",
             )
         else:
-            controlador.eliminar_empleado(documento)
-            flash("El empleado fue eliminado.", "exito")
+            flash(
+                "Se eliminó el empleado. No tenía liquidaciones asociadas.",
+                "exito",
+            )
 
     except ERRORES_PARA_EL_USUARIO as error:
         flash(str(error), "error")
+
+    return redirect(url_for("base_datos.base_datos"))
 
     return redirect(url_for("base_datos.base_datos"))
