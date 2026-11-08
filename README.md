@@ -18,46 +18,38 @@ El proyecto sigue el patrón MVC: el modelo contiene las entidades y la lógica 
 
 ```text
 liquidacion-definitiva/
-│
 ├── doc/
-│   └── Documentación del proyecto
-│
 ├── sql/
-│   └── schema.sql                  # SQL para crear/borrar las tablas
-│
+│   └── schema.sql
 ├── src/
 │   ├── controller/
-│   │   ├── __init__.py
-│   │   └── liquidacion_controller.py
-│   │
+│   │   ├── aplicacion.py
+│   │   ├── liquidacion_controller.py
+│   │   └── blueprints/
 │   ├── model/
-│   │   ├── __init__.py
 │   │   ├── base_datos.py
 │   │   ├── entidades.py
 │   │   ├── excepciones.py
 │   │   └── logica_liquidacion.py
-│   │
 │   ├── view/
-│   │   └── main.py
-│   │
-│   ├── secret_config_sample.py     # plantilla (sin datos reales)
-│   ├── secret_config.py            # alternativa al .env (ignorado por git)
-│   └── verificar_conexion.py       # comprueba la conexión a la BD
-│
+│   │   ├── main.py
+│   │   ├── web/
+│   │   │   ├── app.py
+│   │   │   └── templates/
+│   │   └── web_estilizada/
+│   │       ├── app.py
+│   │       ├── static/
+│   │       └── templates/
+│   ├── secret_config_sample.py
+│   └── verificar_conexion.py
 ├── tests/
-│   ├── __init__.py
 │   ├── test_base_datos.py
-│   ├── test_base_datos.py
+│   ├── test_configuracion.py
 │   └── test_liquidacion.py
-│
-├── .env                            # TUS datos (ignorado por git)
-├── .env.example                    # modelo del .env (sin datos reales)
-├── .env                            # TUS datos (ignorado por git)
-├── .env.example                    # modelo del .env (sin datos reales)
+├── .env.example
 ├── .gitignore
 ├── README.md
-├── requirements.txt
-├── README.md
+├── requirements-web.txt
 ├── requirements.txt
 └── Liquidacion definitiva.xlsx
 ```
@@ -73,10 +65,12 @@ liquidacion-definitiva/
 | `src/controller/liquidacion_controller.py` | Coordina la lógica de liquidación con las operaciones de la base de datos. |
 | `src/controller/aplicacion.py` | Configura Flask, registra filtros de presentación y conecta la aplicación con sus rutas. |
 | `src/controller/blueprints/` | Organiza las rutas web por funcionalidad: inicio, liquidaciones, búsqueda y base de datos. |
+| `src/view/web_estilizada/` | Versión web con estilos CSS y plantillas HTML. |
 | `src/view/web_estilizada/app.py` | Inicia la versión web con el diseño visual de la aplicación. |
 | `src/view/web_estilizada/templates/` | Contiene las plantillas HTML que muestran las páginas de la aplicación. |
 | `src/view/web_estilizada/static/` | Contiene recursos estáticos, como la hoja de estilos CSS. |
-| `src/view/main.py` | Interfaz de consola para usar las funciones del proyecto desde la terminal. |
+| `src/view/main.py` | Interfaz de consola para calcular, guardar y buscar liquidaciones. |
+| `src/view/web/` | Versión web sencilla, con plantillas HTML. |
 | `tests/` | Contiene las pruebas unitarias de los cálculos, validaciones y operaciones de base de datos. |
 | `sql/schema.sql` | Archivo SQL de apoyo con instrucciones para crear o borrar tablas y ejemplos de consultas. |
 | `src/verificar_conexion.py` | Comprueba la configuración y la conexión con PostgreSQL. |
@@ -126,7 +120,7 @@ Las excepciones se mantienen separadas de la lógica de negocio para mejorar la 
 
 ### View
 
-`main.py` contiene la interfaz de consola (menú) y se encarga de interactuar con el usuario: calcular y guardar una liquidación, buscarla por documento o por id, y crear/borrar las tablas.
+La carpeta `src/view/` contiene las interfaces del sistema: una versión de consola en `main.py`, una aplicación web sencilla en `web/` y una versión web con estilos en `web_estilizada/`.
 
 ### Controller
 
