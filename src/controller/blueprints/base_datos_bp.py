@@ -68,7 +68,3 @@ def eliminar_empleado(documento):
         flash(str(error), "error")
 
     return redirect(url_for("base_datos.base_datos"))
-
-    return redirect(url_for("base_datos.base_datos"))
-
-    return redirect(url_for("base_datos.base_datos"))
