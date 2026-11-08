@@ -60,20 +60,14 @@ def eliminar_empleado(documento):
 
     try:
         borradas = obtener_controlador().eliminar_empleado(documento)
-
-        if borradas:
-            flash(
-                f"Se eliminó el empleado y sus {borradas} liquidaciones asociadas.",
-                "exito",
-            )
-        else:
-            flash(
-                "Se eliminó el empleado. No tenía liquidaciones asociadas.",
-                "exito",
-            )
-
+        flash(
+            f"Empleado eliminado. Liquidaciones eliminadas: {borradas}.",
+            "exito",
+        )
     except ERRORES_PARA_EL_USUARIO as error:
         flash(str(error), "error")
+
+    return redirect(url_for("base_datos.base_datos"))
 
     return redirect(url_for("base_datos.base_datos"))
 
