@@ -22,3 +22,6 @@ CARPETA_PLANTILLAS = Path(__file__).resolve().parent / "templates"
 app = crear_aplicacion(
     carpeta_plantillas=CARPETA_PLANTILLAS,
 )
+
+if __name__ == "__main__":
+    app.run(debug=True)
