@@ -137,16 +137,6 @@ La carpeta `src/view/` contiene las interfaces del sistema: una versión de cons
 
 Convierte los errores técnicos de la base de datos (sin conexión, tablas inexistentes) en excepciones propias con mensajes claros.
 
-* `crear_tablas()` y `borrar_tablas()`.
-* `registrar_liquidacion()` → calcula y guarda (`INSERT INTO`).
-* `buscar_por_documento()` y `buscar_por_id()` → consultas (`SELECT`).
-* `listar_liquidaciones()`, `buscar_por_tipo_retiro()` y `listar_empleados()` → listados y filtros.
-* `obtener_total_liquidado()` → suma de las liquidaciones de un empleado.
-* `actualizar_nombre_empleado()` → `UPDATE`.
-* `eliminar_liquidacion()` y `eliminar_empleado()` → `DELETE`.
-
-Convierte los errores técnicos de la base de datos (sin conexión, tablas inexistentes) en excepciones propias con mensajes claros.
-
 ### Tests
 
 La carpeta `tests` contiene las pruebas unitarias que permiten verificar el comportamiento esperado del sistema.
@@ -522,7 +512,7 @@ El proyecto busca aplicar principios de **Clean Code** y buenas prácticas de de
 
 Proyecto desarrollado como parte de las prácticas de programación, con evolución progresiva de la estructura, arquitectura, pruebas unitarias y calidad del código.
 
-La versión actual incorpora una separación de responsabilidades entre la lógica de negocio, las excepciones, la interfaz de consola y las pruebas unitarias.
+La versión actual incluye interfaces de consola y web, dos presentaciones web (HTML sencilla y estilizada), persistencia de datos en PostgreSQL mediante SQLAlchemy, rutas Flask organizadas con Blueprints y pruebas unitarias.
 
 ## 📱 Aplicación Android
 
