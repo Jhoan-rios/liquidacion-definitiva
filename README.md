@@ -32,6 +32,7 @@ liquidacion-definitiva/
 │   │   ├── excepciones.py
 │   │   └── logica_liquidacion.py
 │   ├── view/
+│   │   ├── gui/
 │   │   ├── main.py
 │   │   ├── web/
 │   │   │   ├── app.py
@@ -135,7 +136,6 @@ La carpeta `src/view/` contiene las interfaces del sistema: una versión de cons
 * `eliminar_liquidacion()` y `eliminar_empleado()` → `DELETE`.
 
 Convierte los errores técnicos de la base de datos (sin conexión, tablas inexistentes) en excepciones propias con mensajes claros.
-`LiquidacionController` coordina la lógica de negocio con la base de datos:
 
 * `crear_tablas()` y `borrar_tablas()`.
 * `registrar_liquidacion()` → calcula y guarda (`INSERT INTO`).
